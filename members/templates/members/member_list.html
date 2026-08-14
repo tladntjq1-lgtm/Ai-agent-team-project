@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+
+{% block content %}
+
+<!-- 페이지 상단 -->
+<div class="page-header mb-4">
+
+    <div class="row align-items-center">
+
+        <div class="col">
+
+            <div class="page-pretitle">
+                회원 관리
+            </div>
+
+            <h2 class="page-title">
+                회원 목록
+            </h2>
+
+        </div>
+
+        <!-- 회원 등록 버튼 -->
+        <div class="col-auto ms-auto">
+
+            <a
+                href="{% url 'member_create' %}"
+                class="btn btn-primary"
+            >
+                새 회원 등록
+            </a>
+
+        </div>
+
+    </div>
+
+</div>
+
+
+<!-- 회원 목록 -->
+<div class="card">
+
+    <div class="table-responsive">
+
+        <table class="table table-vcenter card-table">
+
+            <!-- 테이블 제목 -->
+            <thead class="table-dark">
+
+                <tr>
+                    <th>회원 ID</th>
+                    <th>이름</th>
+                    <th>이메일</th>
+                    <th>나이</th>
+                    <th>가입일</th>
+                    <th>관리</th>
+                </tr>
+
+            </thead>
+
+
+            <!-- 회원 데이터 -->
+            <tbody>
+
+                {% for member in members %}
+
+                <tr>
+
+                    <td>{{ member.id }}</td>
+
+                    <td>{{ member.name }}</td>
+
+                    <td>{{ member.email }}</td>
+
+                    <td>{{ member.age }}</td>
+
+                    <td>
+                        {{ member.created_at|date:"Y-m-d H:i:s" }}
+                    </td>
+
+                    <!-- 수정 / 삭제 -->
+                    <td>
+
+                        <div class="d-flex gap-1">
+
+                            <!-- 수정 버튼 -->
+                            <a
+                                href="{% url 'member_update' member.id %}"
+                                class="btn btn-warning btn-sm"
+                            >
+                                수정
+                            </a>
+
+
+                            <!-- 삭제 버튼 -->
+                            <form
+                                method="POST"
+                                action="{% url 'member_delete' member.id %}"
+                                onsubmit="return confirm('회원을 삭제하시겠습니까?');"
+                            >
+
+                                {% csrf_token %}
+
+                                <button
+                                    type="submit"
+                                    class="btn btn-danger btn-sm"
+                                >
+                                    삭제
+                                </button>
+
+                            </form>
+
+                        </div>
+
+                    </td>
+
+                </tr>
+
+
+                <!-- 회원이 한 명도 없을 경우 -->
+                {% empty %}
+
+                <tr>
+
+                    <td
+                        colspan="6"
+                        class="text-center text-muted py-4"
+                    >
+                        등록된 회원이 없습니다.
+                    </td>
+
+                </tr>
+
+                {% endfor %}
+
+            </tbody>
+
+        </table>
+
+    </div>
+
+</div>
+
+{% endblock %}

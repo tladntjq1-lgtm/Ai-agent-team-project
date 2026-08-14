@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="ko">
+
+<head>
+    <meta charset="UTF-8">
+
+    <meta name="viewport"
+          content="width=device-width, initial-scale=1.0">
+
+    <title>AX 피어리뷰 시스템</title>
+
+    <!-- Tabler CSS -->
+    <link
+        rel="stylesheet"
+        href="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/css/tabler.min.css"
+    >
+</head>
+
+<body>
+
+    <!-- 공통 네비게이션 바 -->
+    <nav class="navbar navbar-dark bg-dark">
+        <div class="container-fluid">
+
+            <a class="navbar-brand" href="#">
+                AX Peer Review System
+            </a>
+
+        </div>
+    </nav>
+
+
+    <!-- 각 페이지 내용 -->
+    <div class="container mt-4">
+
+        {% block content %}
+        {% endblock %}
+
+    </div>
+
+
+    <!-- Tabler JS -->
+    <script
+        src="https://cdn.jsdelivr.net/npm/@tabler/core@1.4.0/dist/js/tabler.min.js">
+    </script>
+
+</body>
+</html>
