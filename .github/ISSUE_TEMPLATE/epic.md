@@ -1,17 +1,27 @@
 ---
-name: Epic Issue
-about: 상위 단위의 큰 기능/단계 이슈
-title: '[EPIC] '
-labels: 'epic'
-assignees: ''
+name: Epic
+about: 큰 기능 단위 관리
+title: "[EPIC] "
+labels: ["epic"]
+assignees: []
 ---
 
-## 📌 Epic 개요
-- 
+## 목적
 
-## 🎯 주요 목표
-- [ ] 
+## 관련 BR
 
-## 🔗 하위 Tasks / Issues
-- [ ] #
-- [ ] #
+- BR-
+
+## 포함 프로그램
+
+- PG-
+
+## 세부 Issue
+
+- [ ]
+
+## 완료조건
+
+- [ ] 세부 Issue 완료
+- [ ] 통합 검증 완료
+- [ ] 문서 업데이트

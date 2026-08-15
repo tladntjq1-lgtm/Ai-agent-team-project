@@ -1,28 +1,61 @@
-# 📄 ERD 명세서 (ERD Specification)
+# ERD 설계 사전 정리 템플릿
 
-## 1. ERD 다이어그램 (Mermaid)
+## 1. 관련 BR
 
-```mermaid
-erDiagram
-    TEAM ||--|{ USER : contains
-    USER ||--o{ ISSUE : assigns
-    
-    TEAM {
-        bigint id PK
-        string team_name
-        int max_members "기본값 6"
-    }
-    
-    USER {
-        bigint id PK
-        string name
-        string role "통합담당자, 개발자 등"
-        bigint team_id FK
-    }
-    
-    ISSUE {
-        bigint id PK
-        string title
-        string br_id "BR 연동 식별자"
-        bigint assignee_id FK
-    }
+- BR-
+
+## 2. 데이터 후보
+
+| 엔티티 후보 | 목적 | 관련 BR | 유지/제외 |
+|---|---|---|---|
+|  |  |  |  |
+
+## 3. 관계 설명
+
+```text
+예: 한 평가 회차에는 여러 팀이 존재할 수 있다.
+```
+
+## 4. PK 후보
+
+| 엔티티 | PK 후보 | 이유 |
+|---|---|---|
+|  |  |  |
+
+## 5. FK 후보
+
+| 엔티티 | FK 후보 | 참조 대상 | 이유 |
+|---|---|---|---|
+|  |  |  |  |
+
+## 6. 유일성/중복 방지 조건
+
+- 
+
+## 7. Cardinality
+
+- 1:1
+- 1:N
+- N:M
+
+## 8. AI에게 요청할 프롬프트
+
+```text
+아래 BR과 관계 설명을 기준으로 ERD 초안을 작성해 주세요.
+
+[BR]
+[관계 설명]
+
+조건:
+1. PK/FK 표시
+2. Cardinality 표시
+3. 중복 방지 조건 포함
+4. 각 테이블과 관련 BR 표시
+5. Django Model 코드는 아직 작성하지 않음
+```
+
+## 9. ERD 검증 결과
+
+| 검증 항목 | 예상 | 실제 | 판정 |
+|---|---|---|---|
+| BR 구현에 필요한 데이터 존재 | O |  |  |

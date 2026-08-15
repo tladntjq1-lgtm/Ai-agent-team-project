@@ -1,0 +1,83 @@
+<!doctype html>
+<html lang="ko">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <!--
+  UI ID: UI-INDEX-01
+Program ID: 목업 전체 목록
+관련 BR: BR-01, BR-04, BR-05
+관련 Scenario: 전체 시나리오
+사용 테이블/컬럼: 없음 - 정적 목업 인덱스
+  -->
+  <title>UI 목업 목록 | AX 평가 시스템 목업</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="common/css/common.css">
+</head>
+<body>
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container">
+    <a class="navbar-brand fw-bold" href="ui_index_example.html">AX 평가 시스템</a>
+    <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#mainNav">
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="mainNav">
+      <ul class="navbar-nav ms-auto">
+        <li class="nav-item"><a class="nav-link" href="student_home.html">학생 홈</a></li>
+        <li class="nav-item"><a class="nav-link" href="team_eval_list.html">팀 평가</a></li>
+        <li class="nav-item"><a class="nav-link" href="peer_eval_list.html">개인 평가</a></li>
+        <li class="nav-item"><a class="nav-link" href="evaluation_status.html">평가 현황</a></li>
+      </ul>
+    </div>
+  </div>
+</nav>
+<main class="container py-4">
+
+<div class="d-flex flex-wrap justify-content-between align-items-end gap-2 mb-4">
+  <div>
+    <h1 class="page-title h3 mb-1">UI 목업 프로그램 목록</h1>
+    <p class="text-muted mb-0">분석·설계 예시용 정적 HTML입니다. 각 화면을 클릭해 업무 흐름을 확인합니다.</p>
+  </div>
+  <span class="badge text-bg-info">Bootstrap CDN / Static Mockup</span>
+</div>
+
+<div class="alert alert-warning">
+  <strong>주의:</strong> 이 예시는 정답이 아닙니다. 팀별 요구사항과 BR에 맞춰 UI 명세를 먼저 작성한 뒤 수정해서 사용하세요.
+</div>
+
+<div class="table-responsive">
+<table class="table table-bordered table-hover bg-white align-middle">
+  <thead class="table-dark">
+    <tr>
+      <th>UI ID</th>
+      <th>PG ID</th>
+      <th>화면명</th>
+      <th>파일명</th>
+      <th>주요 용도</th>
+      <th>관련 BR</th>
+      <th>열기</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr><td>UI-HOME-01</td><td>PG-01</td><td>학생 홈</td><td>student_home.html</td><td>현재 평가 현황</td><td>BR-05</td><td><a class="btn btn-sm btn-primary" href="student_home.html">열기</a></td></tr>
+    <tr><td>UI-TEAM-01</td><td>PG-02</td><td>팀 평가 대상 목록</td><td>team_eval_list.html</td><td>타 팀 평가 대상 확인</td><td>BR-01, BR-05</td><td><a class="btn btn-sm btn-primary" href="team_eval_list.html">열기</a></td></tr>
+    <tr><td>UI-TEAM-02</td><td>PG-03</td><td>팀 평가 입력</td><td>team_eval_form.html</td><td>팀 평가 문항 입력</td><td>BR-01, BR-05</td><td><a class="btn btn-sm btn-primary" href="team_eval_form.html?team=Team%202">열기</a></td></tr>
+    <tr><td>UI-PEER-01</td><td>PG-04</td><td>개인 평가 대상 목록</td><td>peer_eval_list.html</td><td>같은 팀원 평가 대상 확인</td><td>BR-04, BR-05</td><td><a class="btn btn-sm btn-primary" href="peer_eval_list.html">열기</a></td></tr>
+    <tr><td>UI-PEER-02</td><td>PG-05</td><td>개인 평가 입력</td><td>peer_eval_form.html</td><td>팀원 개인 평가 입력</td><td>BR-04, BR-05</td><td><a class="btn btn-sm btn-primary" href="peer_eval_form.html?student=학생%20B">열기</a></td></tr>
+    <tr><td>UI-STATUS-01</td><td>PG-06</td><td>평가 제출 현황</td><td>evaluation_status.html</td><td>완료/미완료 확인</td><td>BR-05</td><td><a class="btn btn-sm btn-primary" href="evaluation_status.html">열기</a></td></tr>
+  </tbody>
+</table>
+</div>
+
+<div class="card mt-4">
+  <div class="card-body">
+    <h2 class="h5">목업 확인 권장 순서</h2>
+    <code>학생 홈 → 팀 평가 목록 → 팀 평가 입력 → 개인 평가 목록 → 개인 평가 입력 → 평가 현황</code>
+  </div>
+</div>
+
+</main>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="common/js/common.js"></script>
+</body>
+</html>
