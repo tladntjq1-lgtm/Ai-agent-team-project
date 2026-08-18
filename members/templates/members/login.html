@@ -40,26 +40,30 @@
             </div>
 
 
-            <!-- 회원가입 완료 메시지 -->
+            <!-- 성공 메시지만 출력 -->
             {% if messages %}
 
               {% for message in messages %}
 
-                <div
-                  class="alert alert-success alert-dismissible fade show"
-                  role="alert"
-                >
+                {% if message.tags == 'success' %}
 
-                  {{ message }}
+                  <div
+                    class="alert alert-success alert-dismissible fade show"
+                    role="alert"
+                  >
 
-                  <button
-                    type="button"
-                    class="btn-close"
-                    data-bs-dismiss="alert"
-                    aria-label="닫기"
-                  ></button>
+                    {{ message }}
 
-                </div>
+                    <button
+                      type="button"
+                      class="btn-close"
+                      data-bs-dismiss="alert"
+                      aria-label="닫기"
+                    ></button>
+
+                  </div>
+
+                {% endif %}
 
               {% endfor %}
 

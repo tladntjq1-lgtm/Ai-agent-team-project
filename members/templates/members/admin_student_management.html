@@ -1,20 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!--
-  UI ID: UI-12
-  화면명: 학생 관리
-
-  주요 기능
-  - 전체 학생 조회
-  - 학생 등록
-  - 학생 정보 수정
-  - 현재 팀 확인
-  - 평가 진행 상태 확인
-  -->
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>참교육 | 학생 관리</title>
 
@@ -22,616 +16,1029 @@
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
     rel="stylesheet"
   >
+
 </head>
+
 
 <body class="bg-light">
 
-  <!-- 상단 네비게이션 -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
-    <div class="container">
+<!-- ==========================================
+     상단 네비게이션
+========================================== -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
-      <a
-        class="navbar-brand fw-bold"
-        href="{% url 'admin_dashboard' %}"
-      >
-        참교육 ADMIN
-      </a>
+  <div class="container">
 
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#adminNavbar"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
+
+    <a
+      class="navbar-brand fw-bold"
+      href="{% url 'admin_dashboard' %}"
+    >
+      참교육 ADMIN
+    </a>
+
+
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#adminNavbar"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+
+    <div
+      class="collapse navbar-collapse"
+      id="adminNavbar"
+    >
+
+
+      <ul class="navbar-nav ms-auto align-items-lg-center">
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'admin_dashboard' %}"
+          >
+            대시보드
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'admin_evaluation_round' %}"
+          >
+            평가 관리
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'admin_team_management' %}"
+          >
+            팀 관리
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link active"
+            href="{% url 'admin_student_management' %}"
+          >
+            학생 관리
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'admin_teacher_evaluation' %}"
+          >
+            선생님 평가
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'admin_result_management' %}"
+          >
+            결과 관리
+          </a>
+
+        </li>
+
+
+        <li class="nav-item ms-lg-3">
+
+          <a
+            class="btn btn-outline-light btn-sm"
+            href="{% url 'logout' %}"
+          >
+            로그아웃
+          </a>
+
+        </li>
+
+
+      </ul>
+
+    </div>
+
+  </div>
+
+</nav>
+
+
+
+<!-- ==========================================
+     메인
+========================================== -->
+<main class="container py-5">
+
+
+  <!-- ========================================
+       제목
+  ========================================= -->
+  <div
+    class="
+      d-flex
+      justify-content-between
+      align-items-center
+      mb-4
+    "
+  >
+
+    <div>
+
+      <h1 class="h3 fw-bold mb-1">
+        학생 관리
+      </h1>
+
+
+      <p class="text-muted mb-0">
+        학생 정보와 평가 참여 상태를 관리합니다.
+      </p>
+
+    </div>
+
+
+    <button
+      type="button"
+      class="btn btn-primary"
+      data-bs-toggle="modal"
+      data-bs-target="#addStudentModal"
+    >
+      + 학생 등록
+    </button>
+
+  </div>
+
+
+
+  <!-- ========================================
+       Django 메시지
+  ========================================= -->
+  {% if messages %}
+
+    {% for message in messages %}
 
       <div
-        class="collapse navbar-collapse"
-        id="adminNavbar"
+        class="
+          alert
+          alert-dismissible
+          fade
+          show
+
+          {% if message.tags == 'success' %}
+            alert-success
+
+          {% elif message.tags == 'error' %}
+            alert-danger
+
+          {% elif message.tags == 'warning' %}
+            alert-warning
+
+          {% else %}
+            alert-info
+
+          {% endif %}
+        "
       >
 
-        <ul class="navbar-nav ms-auto">
+        {{ message }}
 
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{% url 'admin_dashboard' %}"
-            >
-              대시보드
-            </a>
-          </li>
 
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{% url 'admin_evaluation_round' %}"
-            >
-              평가 관리
-            </a>
-          </li>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        >
+        </button>
 
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{% url 'admin_team_management' %}"
-            >
-              팀 관리
-            </a>
-          </li>
+      </div>
 
-          <li class="nav-item">
-            <a
-              class="nav-link active"
-              href="{% url 'admin_student_management' %}"
-            >
-              학생 관리
-            </a>
-          </li>
+    {% endfor %}
 
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="#"
-            >
-              결과 관리
-            </a>
-          </li>
+  {% endif %}
 
-        </ul>
+
+
+  <!-- ========================================
+       현재 프로젝트
+  ========================================= -->
+  <div class="card border-0 shadow-sm mb-4">
+
+    <div class="card-body p-4">
+
+
+      {% if current_project %}
+
+
+        <div
+          class="
+            d-flex
+            justify-content-between
+            align-items-center
+            flex-wrap
+            gap-2
+          "
+        >
+
+
+          <div>
+
+            <p class="text-muted small mb-1">
+              현재 프로젝트
+            </p>
+
+
+            <h5 class="fw-bold mb-0">
+
+              {{ current_project.project_name }}
+
+            </h5>
+
+          </div>
+
+
+
+          {% if current_round %}
+
+            <div class="text-end">
+
+              <p class="text-muted small mb-1">
+                현재 평가 회차
+              </p>
+
+
+              <span
+                class="
+                  badge
+
+                  {% if current_round.status == 'IN_PROGRESS' %}
+                    text-bg-success
+
+                  {% elif current_round.status == 'READY' %}
+                    text-bg-warning
+
+                  {% else %}
+                    text-bg-secondary
+
+                  {% endif %}
+                "
+              >
+
+                {{ current_round.round_name }}
+
+                /
+
+                {{ current_round.status }}
+
+              </span>
+
+            </div>
+
+          {% endif %}
+
+
+        </div>
+
+
+      {% else %}
+
+
+        <div class="text-center py-2">
+
+          <span class="text-muted">
+            현재 프로젝트가 없습니다.
+          </span>
+
+        </div>
+
+
+      {% endif %}
+
+
+    </div>
+
+  </div>
+
+
+
+  <!-- ========================================
+       요약 카드
+  ========================================= -->
+  <div class="row g-3 mb-4">
+
+
+    <!-- 전체 학생 -->
+    <div class="col-md-4">
+
+      <div class="card border-0 shadow-sm h-100">
+
+        <div class="card-body">
+
+          <p class="text-muted small mb-1">
+            전체 학생
+          </p>
+
+
+          <h3 class="fw-bold mb-0">
+
+            {{ total_students|default:0 }}명
+
+          </h3>
+
+        </div>
 
       </div>
 
     </div>
 
-  </nav>
 
 
-  <main class="container py-5">
+    <!-- 팀 배정 완료 -->
+    <div class="col-md-4">
 
-    <!-- 제목 -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+      <div class="card border-0 shadow-sm h-100">
 
-      <div>
+        <div class="card-body">
 
-        <h1 class="h3 fw-bold mb-1">
-          학생 관리
-        </h1>
+          <p class="text-muted small mb-1">
+            팀 배정 완료
+          </p>
 
-        <p class="text-muted mb-0">
-          학생 정보와 평가 참여 상태를 관리합니다.
-        </p>
+
+          <h3 class="fw-bold text-success mb-0">
+
+            {{ assigned_count|default:0 }}명
+
+          </h3>
+
+        </div>
 
       </div>
 
-      <button
-        class="btn btn-primary"
-        data-bs-toggle="modal"
-        data-bs-target="#addStudentModal"
+    </div>
+
+
+
+    <!-- 미배정 -->
+    <div class="col-md-4">
+
+      <div class="card border-0 shadow-sm h-100">
+
+        <div class="card-body">
+
+          <p class="text-muted small mb-1">
+            미배정 학생
+          </p>
+
+
+          <h3 class="fw-bold text-warning mb-0">
+
+            {{ unassigned_count|default:0 }}명
+
+          </h3>
+
+        </div>
+
+      </div>
+
+    </div>
+
+
+  </div>
+
+
+
+  <!-- ========================================
+       검색 / 필터
+  ========================================= -->
+  <div class="card border-0 shadow-sm mb-4">
+
+    <div class="card-body">
+
+
+      <form
+        method="GET"
+        action="{% url 'admin_student_management' %}"
       >
-        + 학생 등록
-      </button>
 
-    </div>
-
-
-    <!-- 요약 카드 -->
-    <div class="row g-3 mb-4">
-
-      <div class="col-md-4">
-
-        <div class="card border-0 shadow-sm h-100">
-
-          <div class="card-body">
-
-            <p class="text-muted small mb-1">
-              전체 학생
-            </p>
-
-            <h3 class="fw-bold mb-0">
-              20명
-            </h3>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="col-md-4">
-
-        <div class="card border-0 shadow-sm h-100">
-
-          <div class="card-body">
-
-            <p class="text-muted small mb-1">
-              팀 배정 완료
-            </p>
-
-            <h3 class="fw-bold text-success mb-0">
-              18명
-            </h3>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <div class="col-md-4">
-
-        <div class="card border-0 shadow-sm h-100">
-
-          <div class="card-body">
-
-            <p class="text-muted small mb-1">
-              미배정 학생
-            </p>
-
-            <h3 class="fw-bold text-warning mb-0">
-              2명
-            </h3>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-
-
-    <!-- 검색 / 필터 -->
-    <div class="card border-0 shadow-sm mb-4">
-
-      <div class="card-body">
 
         <div class="row g-3">
 
+
+          <!-- 검색 -->
           <div class="col-md-5">
 
             <label class="form-label fw-semibold">
               학생 검색
             </label>
 
+
             <input
               type="text"
+              name="search"
               class="form-control"
-              placeholder="이름 또는 이메일 검색"
+              placeholder="이름 / 이메일 / 아이디 / Slack ID"
+              value="{{ search }}"
             >
 
           </div>
 
 
+
+          <!-- 팀 -->
           <div class="col-md-3">
 
             <label class="form-label fw-semibold">
               팀
             </label>
 
-            <select class="form-select">
 
-              <option selected>
+            <select
+              name="team"
+              class="form-select"
+            >
+
+
+              <option
+                value=""
+                {% if not team_filter %}
+                  selected
+                {% endif %}
+              >
                 전체 팀
               </option>
 
-              <option>
-                1팀
-              </option>
 
-              <option>
-                2팀
-              </option>
+              {% for team in teams %}
 
-              <option>
-                3팀
-              </option>
+                <option
+                  value="{{ team.team_id }}"
 
-              <option>
-                4팀
-              </option>
+                  {% if team_filter|stringformat:"s" == team.team_id|stringformat:"s" %}
+                    selected
+                  {% endif %}
+                >
 
-              <option>
-                5팀
-              </option>
+                  {{ team.team_name }}
 
-              <option>
+                </option>
+
+              {% endfor %}
+
+
+              <option
+                value="UNASSIGNED"
+
+                {% if team_filter == 'UNASSIGNED' %}
+                  selected
+                {% endif %}
+              >
                 미배정
               </option>
+
 
             </select>
 
           </div>
 
 
+
+          <!-- 평가 상태 -->
           <div class="col-md-3">
 
             <label class="form-label fw-semibold">
               평가 상태
             </label>
 
-            <select class="form-select">
 
-              <option selected>
+            <select
+              name="evaluation_status"
+              class="form-select"
+            >
+
+
+              <option
+                value=""
+                {% if not evaluation_filter %}
+                  selected
+                {% endif %}
+              >
                 전체
               </option>
 
-              <option>
+
+              <option
+                value="IN_PROGRESS"
+
+                {% if evaluation_filter == 'IN_PROGRESS' %}
+                  selected
+                {% endif %}
+              >
                 평가 진행 중
               </option>
 
-              <option>
+
+              <option
+                value="COMPLETED"
+
+                {% if evaluation_filter == 'COMPLETED' %}
+                  selected
+                {% endif %}
+              >
                 평가 완료
               </option>
 
-              <option>
+
+              <option
+                value="NOT_STARTED"
+
+                {% if evaluation_filter == 'NOT_STARTED' %}
+                  selected
+                {% endif %}
+              >
                 미참여
               </option>
+
 
             </select>
 
           </div>
 
 
+
+          <!-- 검색 버튼 -->
           <div class="col-md-1 d-flex align-items-end">
 
-            <button class="btn btn-outline-primary w-100">
+            <button
+              type="submit"
+              class="btn btn-outline-primary w-100"
+            >
               검색
             </button>
 
           </div>
 
+
         </div>
 
-      </div>
 
-    </div>
+        <!-- 초기화 -->
+        {% if search or team_filter or evaluation_filter %}
 
+          <div class="mt-3">
 
-    <!-- 학생 목록 -->
-    <div class="card border-0 shadow-sm">
-
-      <div class="card-body p-4">
-
-        <div
-          class="d-flex justify-content-between align-items-center mb-3"
-        >
-
-          <div>
-
-            <h5 class="fw-bold mb-1">
-              학생 목록
-            </h5>
-
-            <p class="text-muted small mb-0">
-              총 20명의 학생이 등록되어 있습니다.
-            </p>
+            <a
+              href="{% url 'admin_student_management' %}"
+              class="btn btn-sm btn-outline-secondary"
+            >
+              검색 초기화
+            </a>
 
           </div>
 
-        </div>
+        {% endif %}
 
 
-        <div class="table-responsive">
+      </form>
 
-          <table class="table table-hover align-middle">
-
-            <thead class="table-light">
-
-              <tr>
-
-                <th>
-                  이름
-                </th>
-
-                <th>
-                  이메일
-                </th>
-
-                <th>
-                  전화번호
-                </th>
-
-                <th>
-                  Slack ID
-                </th>
-
-                <th>
-                  현재 팀
-                </th>
-
-                <th>
-                  팀 평가
-                </th>
-
-                <th>
-                  개인 평가
-                </th>
-
-                <th>
-                  특이사항
-                </th>
-
-                <th class="text-center">
-                  관리
-                </th>
-
-              </tr>
-
-            </thead>
-
-
-            <tbody>
-
-              <!-- 학생 1 -->
-              <tr>
-
-                <td class="fw-semibold">
-                  김학생
-                </td>
-
-                <td>
-                  student01@email.com
-                </td>
-
-                <td>
-                  010-1234-5678
-                </td>
-
-                <td>
-                  @student01
-                </td>
-
-                <td>
-                  <span class="badge text-bg-primary">
-                    1팀
-                  </span>
-                </td>
-
-                <td>
-                  <span class="badge text-bg-success">
-                    완료
-                  </span>
-                </td>
-
-                <td>
-                  <span class="badge text-bg-warning">
-                    진행 중
-                  </span>
-                </td>
-
-                <td>
-                  발표 경험 많음
-                </td>
-
-                <td class="text-center">
-
-                  <button
-                    class="btn btn-sm btn-outline-primary"
-                    data-bs-toggle="modal"
-                    data-bs-target="#editStudentModal"
-                  >
-                    수정
-                  </button>
-
-                </td>
-
-              </tr>
-
-
-              <!-- 학생 2 -->
-              <tr>
-
-                <td class="fw-semibold">
-                  이학생
-                </td>
-
-                <td>
-                  student02@email.com
-                </td>
-
-                <td>
-                  010-2345-6789
-                </td>
-
-                <td>
-                  @student02
-                </td>
-
-                <td>
-                  <span class="badge text-bg-primary">
-                    1팀
-                  </span>
-                </td>
-
-                <td>
-                  <span class="badge text-bg-success">
-                    완료
-                  </span>
-                </td>
-
-                <td>
-                  <span class="badge text-bg-success">
-                    완료
-                  </span>
-                </td>
-
-                <td>
-                  프론트엔드 관심
-                </td>
-
-                <td class="text-center">
-
-                  <button
-                    class="btn btn-sm btn-outline-primary"
-                    data-bs-toggle="modal"
-                    data-bs-target="#editStudentModal"
-                  >
-                    수정
-                  </button>
-
-                </td>
-
-              </tr>
-
-
-              <!-- 학생 3 -->
-              <tr>
-
-                <td class="fw-semibold">
-                  박학생
-                </td>
-
-                <td>
-                  student03@email.com
-                </td>
-
-                <td>
-                  010-3456-7890
-                </td>
-
-                <td>
-                  @student03
-                </td>
-
-                <td>
-                  <span class="badge text-bg-primary">
-                    2팀
-                  </span>
-                </td>
-
-                <td>
-                  <span class="badge text-bg-warning">
-                    진행 중
-                  </span>
-                </td>
-
-                <td>
-                  <span class="badge text-bg-secondary">
-                    미참여
-                  </span>
-                </td>
-
-                <td>
-                  DB / SQL 관심
-                </td>
-
-                <td class="text-center">
-
-                  <button
-                    class="btn btn-sm btn-outline-primary"
-                    data-bs-toggle="modal"
-                    data-bs-target="#editStudentModal"
-                  >
-                    수정
-                  </button>
-
-                </td>
-
-              </tr>
-
-
-              <!-- 미배정 학생 -->
-              <tr>
-
-                <td class="fw-semibold">
-                  홍길동
-                </td>
-
-                <td>
-                  hong@email.com
-                </td>
-
-                <td>
-                  010-9999-9999
-                </td>
-
-                <td>
-                  @hong
-                </td>
-
-                <td>
-                  <span class="badge text-bg-secondary">
-                    미배정
-                  </span>
-                </td>
-
-                <td>
-                  <span class="badge text-bg-secondary">
-                    대상 아님
-                  </span>
-                </td>
-
-                <td>
-                  <span class="badge text-bg-secondary">
-                    대상 아님
-                  </span>
-                </td>
-
-                <td>
-                  없음
-                </td>
-
-                <td class="text-center">
-
-                  <button
-                    class="btn btn-sm btn-outline-primary"
-                    data-bs-toggle="modal"
-                    data-bs-target="#editStudentModal"
-                  >
-                    수정
-                  </button>
-
-                </td>
-
-              </tr>
-
-            </tbody>
-
-          </table>
-
-        </div>
-
-      </div>
 
     </div>
 
-  </main>
+  </div>
 
 
-  <!-- 학생 등록 모달 -->
-  <div
-    class="modal fade"
-    id="addStudentModal"
-    tabindex="-1"
-  >
 
-    <div class="modal-dialog modal-lg modal-dialog-centered">
+  <!-- ========================================
+       학생 목록
+  ========================================= -->
+  <div class="card border-0 shadow-sm">
 
-      <div class="modal-content">
+    <div class="card-body p-4">
+
+
+      <div
+        class="
+          d-flex
+          justify-content-between
+          align-items-center
+          mb-3
+        "
+      >
+
+
+        <div>
+
+          <h5 class="fw-bold mb-1">
+            학생 목록
+          </h5>
+
+
+          <p class="text-muted small mb-0">
+
+            전체 {{ total_students|default:0 }}명 중
+
+            {{ filtered_count|default:0 }}명이 표시되고 있습니다.
+
+          </p>
+
+        </div>
+
+
+      </div>
+
+
+
+      <div class="table-responsive">
+
+
+        <table class="table table-hover align-middle">
+
+
+          <thead class="table-light">
+
+
+            <tr>
+
+              <th>
+                ID
+              </th>
+
+              <th>
+                이름
+              </th>
+
+              <th>
+                로그인 ID
+              </th>
+
+              <th>
+                이메일
+              </th>
+
+              <th>
+                전화번호
+              </th>
+
+              <th>
+                Slack ID
+              </th>
+
+              <th>
+                현재 팀
+              </th>
+
+              <th>
+                팀 평가
+              </th>
+
+              <th>
+                개인 평가
+              </th>
+
+              <th>
+                특이사항
+              </th>
+
+              <th class="text-center">
+                관리
+              </th>
+
+            </tr>
+
+
+          </thead>
+
+
+
+          <tbody>
+
+
+            {% for row in student_rows %}
+
+
+              <tr>
+
+
+                <!-- 학생 ID -->
+                <td>
+
+                  {{ row.student.student_id }}
+
+                </td>
+
+
+
+                <!-- 이름 -->
+                <td class="fw-semibold">
+
+                  {{ row.student.name }}
+
+                </td>
+
+
+
+                <!-- 로그인 ID -->
+                <td>
+
+                  {{ row.student.login_id }}
+
+                </td>
+
+
+
+                <!-- 이메일 -->
+                <td>
+
+                  {{ row.student.email|default:"-" }}
+
+                </td>
+
+
+
+                <!-- 전화번호 -->
+                <td>
+
+                  {{ row.student.phone|default:"-" }}
+
+                </td>
+
+
+
+                <!-- Slack -->
+                <td>
+
+                  {{ row.student.slack_id|default:"-" }}
+
+                </td>
+
+
+
+                <!-- 팀 -->
+                <td>
+
+
+                  {% if row.team %}
+
+                    <span class="badge text-bg-primary">
+
+                      {{ row.team.team_name }}
+
+                    </span>
+
+                  {% else %}
+
+                    <span class="badge text-bg-secondary">
+                      미배정
+                    </span>
+
+                  {% endif %}
+
+
+                </td>
+
+
+
+                <!-- 팀 평가 -->
+                <td>
+
+
+                  {% if row.team_status == 'COMPLETED' %}
+
+                    <span class="badge text-bg-success">
+                      완료
+                    </span>
+
+
+                  {% elif row.team_status == 'IN_PROGRESS' %}
+
+                    <span class="badge text-bg-warning">
+                      진행 중
+                    </span>
+
+
+                  {% elif row.team_status == 'NOT_STARTED' %}
+
+                    <span class="badge text-bg-secondary">
+                      미참여
+                    </span>
+
+
+                  {% else %}
+
+                    <span class="badge text-bg-secondary">
+                      대상 아님
+                    </span>
+
+                  {% endif %}
+
+
+                  {% if row.team_target_count %}
+
+                    <div class="small text-muted mt-1">
+
+                      {{ row.team_completed_count }}
+
+                      /
+
+                      {{ row.team_target_count }}
+
+                    </div>
+
+                  {% endif %}
+
+
+                </td>
+
+
+
+                <!-- 개인 평가 -->
+                <td>
+
+
+                  {% if row.individual_status == 'COMPLETED' %}
+
+                    <span class="badge text-bg-success">
+                      완료
+                    </span>
+
+
+                  {% elif row.individual_status == 'IN_PROGRESS' %}
+
+                    <span class="badge text-bg-warning">
+                      진행 중
+                    </span>
+
+
+                  {% elif row.individual_status == 'NOT_STARTED' %}
+
+                    <span class="badge text-bg-secondary">
+                      미참여
+                    </span>
+
+
+                  {% else %}
+
+                    <span class="badge text-bg-secondary">
+                      대상 아님
+                    </span>
+
+                  {% endif %}
+
+
+                  {% if row.individual_target_count %}
+
+                    <div class="small text-muted mt-1">
+
+                      {{ row.individual_completed_count }}
+
+                      /
+
+                      {{ row.individual_target_count }}
+
+                    </div>
+
+                  {% endif %}
+
+
+                </td>
+
+
+
+                <!-- 특이사항 -->
+                <td>
+
+                  {% if row.student.note %}
+
+                    {{ row.student.note }}
+
+                  {% else %}
+
+                    -
+
+                  {% endif %}
+
+                </td>
+
+
+
+                <!-- 수정 -->
+                <td class="text-center">
+
+
+                  <button
+                    type="button"
+                    class="btn btn-sm btn-outline-primary"
+
+                    data-bs-toggle="modal"
+
+                    data-bs-target="#editStudentModal{{ row.student.student_id }}"
+                  >
+                    수정
+                  </button>
+
+
+                </td>
+
+
+              </tr>
+
+
+            {% empty %}
+
+
+              <tr>
+
+                <td
+                  colspan="11"
+                  class="text-center text-muted py-5"
+                >
+
+                  검색 조건에 해당하는 학생이 없습니다.
+
+                </td>
+
+              </tr>
+
+
+            {% endfor %}
+
+
+          </tbody>
+
+
+        </table>
+
+
+      </div>
+
+
+    </div>
+
+  </div>
+
+
+</main>
+
+
+
+<!-- ==========================================
+     학생 등록 Modal
+========================================== -->
+<div
+  class="modal fade"
+  id="addStudentModal"
+  tabindex="-1"
+>
+
+
+  <div class="modal-dialog modal-lg modal-dialog-centered">
+
+
+    <div class="modal-content">
+
+
+      <form
+        method="POST"
+        action="{% url 'admin_student_management' %}"
+      >
+
+
+        {% csrf_token %}
+
+
+        <input
+          type="hidden"
+          name="action"
+          value="create"
+        >
+
+
 
         <div class="modal-header">
 
@@ -639,72 +1046,115 @@
             학생 등록
           </h5>
 
+
           <button
             type="button"
             class="btn-close"
             data-bs-dismiss="modal"
-          ></button>
+          >
+          </button>
 
         </div>
 
 
+
         <div class="modal-body">
+
 
           <div class="row g-3">
 
+
+            <!-- 이름 -->
             <div class="col-md-6">
 
               <label class="form-label fw-semibold">
-                이름
+                이름 *
               </label>
+
 
               <input
                 type="text"
+                name="name"
                 class="form-control"
-                placeholder="이름을 입력하세요"
+                required
               >
 
             </div>
 
 
+
+            <!-- ID -->
             <div class="col-md-6">
 
               <label class="form-label fw-semibold">
-                아이디
+                로그인 아이디 *
               </label>
+
 
               <input
                 type="text"
+                name="login_id"
                 class="form-control"
-                placeholder="로그인 아이디"
+                required
               >
 
             </div>
 
 
+
+            <!-- 비밀번호 -->
+            <div class="col-md-6">
+
+              <label class="form-label fw-semibold">
+                초기 비밀번호
+              </label>
+
+
+              <input
+                type="password"
+                name="password"
+                class="form-control"
+                placeholder="미입력 시 1234"
+              >
+
+
+              <div class="form-text">
+                테스트용입니다.
+              </div>
+
+            </div>
+
+
+
+            <!-- 이메일 -->
             <div class="col-md-6">
 
               <label class="form-label fw-semibold">
                 이메일
               </label>
 
+
               <input
                 type="email"
+                name="email"
                 class="form-control"
-                placeholder="example@email.com"
               >
 
             </div>
 
 
+
+            <!-- 전화 -->
             <div class="col-md-6">
 
               <label class="form-label fw-semibold">
                 전화번호
               </label>
 
+
               <input
                 type="text"
+                name="phone"
                 class="form-control"
                 placeholder="010-0000-0000"
               >
@@ -712,265 +1162,90 @@
             </div>
 
 
+
+            <!-- Slack -->
             <div class="col-md-6">
 
               <label class="form-label fw-semibold">
                 Slack ID
               </label>
 
-              <input
-                type="text"
-                class="form-control"
-                placeholder="@student"
-              >
-
-            </div>
-
-
-            <div class="col-md-6">
-
-              <label class="form-label fw-semibold">
-                팀
-              </label>
-
-              <select class="form-select">
-
-                <option selected>
-                  미배정
-                </option>
-
-                <option>
-                  1팀
-                </option>
-
-                <option>
-                  2팀
-                </option>
-
-                <option>
-                  3팀
-                </option>
-
-                <option>
-                  4팀
-                </option>
-
-                <option>
-                  5팀
-                </option>
-
-              </select>
-
-            </div>
-
-
-            <div class="col-12">
-
-              <label class="form-label fw-semibold">
-                특이사항
-              </label>
-
-              <textarea
-                class="form-control"
-                rows="3"
-                placeholder="학생 특이사항을 입력하세요"
-              ></textarea>
-
-            </div>
-
-          </div>
-
-        </div>
-
-
-        <div class="modal-footer">
-
-          <button
-            type="button"
-            class="btn btn-outline-secondary"
-            data-bs-dismiss="modal"
-          >
-            취소
-          </button>
-
-          <button
-            type="button"
-            class="btn btn-primary"
-            data-bs-dismiss="modal"
-          >
-            등록
-          </button>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <!-- 학생 수정 모달 -->
-  <div
-    class="modal fade"
-    id="editStudentModal"
-    tabindex="-1"
-  >
-
-    <div class="modal-dialog modal-lg modal-dialog-centered">
-
-      <div class="modal-content">
-
-        <div class="modal-header">
-
-          <h5 class="modal-title fw-bold">
-            학생 정보 수정
-          </h5>
-
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-          ></button>
-
-        </div>
-
-
-        <div class="modal-body">
-
-          <div class="row g-3">
-
-            <div class="col-md-6">
-
-              <label class="form-label fw-semibold">
-                이름
-              </label>
 
               <input
                 type="text"
+                name="slack_id"
                 class="form-control"
-                value="김학생"
               >
 
             </div>
 
 
-            <div class="col-md-6">
 
-              <label class="form-label fw-semibold">
-                아이디
-              </label>
-
-              <input
-                type="text"
-                class="form-control"
-                value="student01"
-              >
-
-            </div>
-
-
-            <div class="col-md-6">
-
-              <label class="form-label fw-semibold">
-                이메일
-              </label>
-
-              <input
-                type="email"
-                class="form-control"
-                value="student01@email.com"
-              >
-
-            </div>
-
-
-            <div class="col-md-6">
-
-              <label class="form-label fw-semibold">
-                전화번호
-              </label>
-
-              <input
-                type="text"
-                class="form-control"
-                value="010-1234-5678"
-              >
-
-            </div>
-
-
-            <div class="col-md-6">
-
-              <label class="form-label fw-semibold">
-                Slack ID
-              </label>
-
-              <input
-                type="text"
-                class="form-control"
-                value="@student01"
-              >
-
-            </div>
-
-
+            <!-- 팀 -->
             <div class="col-md-6">
 
               <label class="form-label fw-semibold">
                 현재 팀
               </label>
 
-              <select class="form-select">
 
-                <option>
+              <select
+                name="team_id"
+                class="form-select"
+              >
+
+
+                <option
+                  value="UNASSIGNED"
+                  selected
+                >
                   미배정
                 </option>
 
-                <option selected>
-                  1팀
-                </option>
 
-                <option>
-                  2팀
-                </option>
+                {% for team in teams %}
 
-                <option>
-                  3팀
-                </option>
+                  <option
+                    value="{{ team.team_id }}"
+                  >
+                    {{ team.team_name }}
+                  </option>
 
-                <option>
-                  4팀
-                </option>
+                {% endfor %}
 
-                <option>
-                  5팀
-                </option>
 
               </select>
 
             </div>
 
 
+
+            <!-- 특이사항 -->
             <div class="col-12">
 
               <label class="form-label fw-semibold">
                 특이사항
               </label>
 
+
               <textarea
+                name="note"
                 class="form-control"
                 rows="3"
-              >발표 경험이 많음</textarea>
+              ></textarea>
 
             </div>
 
+
           </div>
+
 
         </div>
 
 
+
         <div class="modal-footer">
+
 
           <button
             type="button"
@@ -980,15 +1255,292 @@
             취소
           </button>
 
+
           <button
-            type="button"
+            type="submit"
             class="btn btn-primary"
-            data-bs-dismiss="modal"
           >
-            저장
+            등록
           </button>
 
+
         </div>
+
+
+      </form>
+
+
+    </div>
+
+  </div>
+
+</div>
+
+
+
+<!-- ==========================================
+     학생별 수정 Modal
+========================================== -->
+{% for row in student_rows %}
+
+
+  <div
+    class="modal fade"
+    id="editStudentModal{{ row.student.student_id }}"
+    tabindex="-1"
+  >
+
+
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+
+
+      <div class="modal-content">
+
+
+        <form
+          method="POST"
+          action="{% url 'admin_student_management' %}"
+        >
+
+
+          {% csrf_token %}
+
+
+          <input
+            type="hidden"
+            name="action"
+            value="update"
+          >
+
+
+          <input
+            type="hidden"
+            name="student_id"
+            value="{{ row.student.student_id }}"
+          >
+
+
+
+          <div class="modal-header">
+
+
+            <h5 class="modal-title fw-bold">
+              학생 정보 수정
+            </h5>
+
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            >
+            </button>
+
+
+          </div>
+
+
+
+          <div class="modal-body">
+
+
+            <div class="row g-3">
+
+
+              <!-- 이름 -->
+              <div class="col-md-6">
+
+                <label class="form-label fw-semibold">
+                  이름 *
+                </label>
+
+
+                <input
+                  type="text"
+                  name="name"
+                  class="form-control"
+                  value="{{ row.student.name }}"
+                  required
+                >
+
+              </div>
+
+
+
+              <!-- 로그인 ID -->
+              <div class="col-md-6">
+
+                <label class="form-label fw-semibold">
+                  로그인 아이디 *
+                </label>
+
+
+                <input
+                  type="text"
+                  name="login_id"
+                  class="form-control"
+                  value="{{ row.student.login_id }}"
+                  required
+                >
+
+              </div>
+
+
+
+              <!-- 이메일 -->
+              <div class="col-md-6">
+
+                <label class="form-label fw-semibold">
+                  이메일
+                </label>
+
+
+                <input
+                  type="email"
+                  name="email"
+                  class="form-control"
+                  value="{{ row.student.email|default:'' }}"
+                >
+
+              </div>
+
+
+
+              <!-- 전화 -->
+              <div class="col-md-6">
+
+                <label class="form-label fw-semibold">
+                  전화번호
+                </label>
+
+
+                <input
+                  type="text"
+                  name="phone"
+                  class="form-control"
+                  value="{{ row.student.phone|default:'' }}"
+                >
+
+              </div>
+
+
+
+              <!-- Slack -->
+              <div class="col-md-6">
+
+                <label class="form-label fw-semibold">
+                  Slack ID
+                </label>
+
+
+                <input
+                  type="text"
+                  name="slack_id"
+                  class="form-control"
+                  value="{{ row.student.slack_id|default:'' }}"
+                >
+
+              </div>
+
+
+
+              <!-- 팀 -->
+              <div class="col-md-6">
+
+                <label class="form-label fw-semibold">
+                  현재 팀
+                </label>
+
+
+                <select
+                  name="team_id"
+                  class="form-select"
+                >
+
+
+                  <option
+                    value="UNASSIGNED"
+
+                    {% if not row.team %}
+                      selected
+                    {% endif %}
+                  >
+                    미배정
+                  </option>
+
+
+                  {% for team in teams %}
+
+                    <option
+                      value="{{ team.team_id }}"
+
+                      {% if row.team and row.team.team_id == team.team_id %}
+                        selected
+                      {% endif %}
+                    >
+
+                      {{ team.team_name }}
+
+                    </option>
+
+                  {% endfor %}
+
+
+                </select>
+
+              </div>
+
+
+
+              <!-- 특이사항 -->
+              <div class="col-12">
+
+                <label class="form-label fw-semibold">
+                  특이사항
+                </label>
+
+
+                <textarea
+                  name="note"
+                  class="form-control"
+                  rows="3"
+                >{{ row.student.note|default:'' }}</textarea>
+
+              </div>
+
+
+            </div>
+
+
+          </div>
+
+
+
+          <div class="modal-footer">
+
+
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              취소
+            </button>
+
+
+            <button
+              type="submit"
+              class="btn btn-primary"
+            >
+              저장
+            </button>
+
+
+          </div>
+
+
+        </form>
+
 
       </div>
 
@@ -997,9 +1549,19 @@
   </div>
 
 
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-  ></script>
+{% endfor %}
+
+
+
+<!-- ==========================================
+     Bootstrap
+========================================== -->
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+>
+</script>
+
 
 </body>
+
 </html>

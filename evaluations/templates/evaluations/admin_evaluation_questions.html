@@ -1,21 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!--
-  UI ID: UI-10
-  화면명: 평가 문항 관리
-
-  주요 기능
-  - 팀 평가 문항 조회
-  - 개인 평가 문항 조회
-  - 문항 추가
-  - 문항 수정
-  - 문항 삭제
-  - READY 상태에서만 변경 가능
-  -->
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>참교육 | 평가 문항 관리</title>
 
@@ -23,172 +16,323 @@
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
     rel="stylesheet"
   >
+
 </head>
+
 
 <body class="bg-light">
 
-  <!-- 상단 네비게이션 -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
-    <div class="container">
+<!-- ==========================================
+     상단 네비게이션
+========================================== -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
-      <a
-        class="navbar-brand fw-bold"
-        href="{% url 'admin_dashboard' %}"
-      >
-        참교육 ADMIN
-      </a>
+  <div class="container">
 
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#adminNavbar"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
+    <a
+      class="navbar-brand fw-bold"
+      href="{% url 'admin_dashboard' %}"
+    >
+      참교육 ADMIN
+    </a>
+
+
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#adminNavbar"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+
+    <div
+      class="collapse navbar-collapse"
+      id="adminNavbar"
+    >
+
+      <ul class="navbar-nav ms-auto align-items-lg-center">
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'admin_dashboard' %}"
+          >
+            대시보드
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link active"
+            href="{% url 'admin_evaluation_round' %}"
+          >
+            평가 관리
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'admin_team_management' %}"
+          >
+            팀 관리
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'admin_student_management' %}"
+          >
+            학생 관리
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'admin_teacher_evaluation' %}"
+          >
+            선생님 평가
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'admin_result_management' %}"
+          >
+            결과 관리
+          </a>
+
+        </li>
+
+
+        <li class="nav-item ms-lg-3">
+
+          <a
+            class="btn btn-outline-light btn-sm"
+            href="{% url 'logout' %}"
+          >
+            로그아웃
+          </a>
+
+        </li>
+
+      </ul>
+
+    </div>
+
+  </div>
+
+</nav>
+
+
+
+<!-- ==========================================
+     메인
+========================================== -->
+<main class="container py-5">
+
+
+  <!-- ========================================
+       제목
+  ========================================= -->
+  <div
+    class="
+      d-flex
+      justify-content-between
+      align-items-center
+      mb-4
+    "
+  >
+
+    <div>
+
+      <h1 class="h3 fw-bold mb-1">
+        평가 문항 관리
+      </h1>
+
+      <p class="text-muted mb-0">
+        팀 평가와 개인 평가 문항을 관리합니다.
+      </p>
+
+    </div>
+
+
+    <a
+      href="{% url 'admin_evaluation_round' %}"
+      class="btn btn-outline-secondary"
+    >
+      평가 회차 목록
+    </a>
+
+  </div>
+
+
+
+  <!-- ========================================
+       Django 메시지
+  ========================================= -->
+  {% if messages %}
+
+    {% for message in messages %}
 
       <div
-        class="collapse navbar-collapse"
-        id="adminNavbar"
+        class="
+          alert
+          alert-dismissible
+          fade
+          show
+
+          {% if message.tags == 'success' %}
+            alert-success
+
+          {% elif message.tags == 'error' %}
+            alert-danger
+
+          {% elif message.tags == 'warning' %}
+            alert-warning
+
+          {% else %}
+            alert-info
+          {% endif %}
+        "
+        role="alert"
       >
 
-        <ul class="navbar-nav ms-auto">
+        {{ message }}
 
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{% url 'admin_dashboard' %}"
-            >
-              대시보드
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a
-              class="nav-link active"
-              href="{% url 'admin_evaluation_round' %}"
-            >
-              평가 관리
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{% url 'admin_team_management' %}"
-            >
-              팀 관리
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{% url 'admin_student_management' %}"
-            >
-              학생 관리
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{% url 'admin_teacher_evaluation' %}"
-            >
-              선생님 평가
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{% url 'admin_result_management' %}"
-            >
-              결과 관리
-            </a>
-          </li>
-
-        </ul>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+        >
+        </button>
 
       </div>
 
-    </div>
+    {% endfor %}
 
-  </nav>
+  {% endif %}
 
 
-  <main class="container py-5">
 
-    <!-- 제목 -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+  <!-- ========================================
+       평가 회차가 없는 경우
+  ========================================= -->
+  {% if not current_round %}
 
-      <div>
 
-        <h1 class="h3 fw-bold mb-1">
-          평가 문항 관리
-        </h1>
+    <div class="card border-0 shadow-sm">
 
-        <p class="text-muted mb-0">
-          팀 평가와 개인 평가 문항을 관리합니다.
+      <div class="card-body text-center py-5">
+
+        <h4 class="fw-bold mb-3">
+          선택된 평가 회차가 없습니다.
+        </h4>
+
+        <p class="text-muted mb-4">
+          평가 회차를 먼저 생성해주세요.
         </p>
 
-      </div>
+        <a
+          href="{% url 'admin_evaluation_round' %}"
+          class="btn btn-primary"
+        >
+          평가 회차 관리로 이동
+        </a>
 
-      <span class="badge text-bg-warning fs-6">
-        READY
-      </span>
+      </div>
 
     </div>
 
 
-    <!-- 평가 회차 -->
+
+  {% else %}
+
+
+    <!-- ======================================
+         선택된 평가 회차
+    ======================================= -->
     <div class="card border-0 shadow-sm mb-4">
 
       <div class="card-body p-4">
 
-        <div class="row g-3 align-items-end">
+        <div
+          class="
+            d-flex
+            justify-content-between
+            align-items-center
+            flex-wrap
+            gap-3
+          "
+        >
 
-          <div class="col-md-8">
+          <div>
 
             <p class="text-muted small mb-1">
               현재 선택된 평가 회차
             </p>
 
-            <h5 class="fw-bold mb-0">
-              3차 프로젝트 평가
-            </h5>
+            <h4 class="fw-bold mb-0">
+              {{ current_round.round_name }}
+            </h4>
 
           </div>
 
 
-          <div class="col-md-4">
+          <div class="text-end">
 
-            <label
-              for="evaluationRound"
-              class="form-label fw-semibold"
-            >
-              평가 회차
-            </label>
+            <p class="text-muted small mb-1">
+              상태
+            </p>
 
-            <select
-              class="form-select"
-              id="evaluationRound"
-            >
 
-              <option selected>
-                3차 프로젝트 평가
-              </option>
+            {% if current_round.status == 'READY' %}
 
-              <option>
-                2차 프로젝트 평가
-              </option>
+              <span class="badge text-bg-warning fs-6">
+                READY
+              </span>
 
-              <option>
-                1차 프로젝트 평가
-              </option>
+            {% elif current_round.status == 'IN_PROGRESS' %}
 
-            </select>
+              <span class="badge text-bg-success fs-6">
+                IN_PROGRESS
+              </span>
+
+            {% elif current_round.status == 'COMPLETED' %}
+
+              <span class="badge text-bg-secondary fs-6">
+                COMPLETED
+              </span>
+
+            {% else %}
+
+              <span class="badge text-bg-dark fs-6">
+                {{ current_round.status }}
+              </span>
+
+            {% endif %}
 
           </div>
 
@@ -199,31 +343,78 @@
     </div>
 
 
-    <!-- 상태 안내 -->
-    <div class="alert alert-warning">
 
-      <strong>현재 평가 회차는 READY 상태입니다.</strong>
+    <!-- ======================================
+         상태 안내
+    ======================================= -->
+    {% if editable %}
 
-      <div class="small mt-1">
-        평가 시작 전까지 문항을 추가·수정·삭제할 수 있습니다.
-        평가가 시작되면 기존 점수의 의미가 변하지 않도록 문항 변경이 제한됩니다.
+      <div class="alert alert-warning">
+
+        <strong>
+          현재 평가 회차는 READY 상태입니다.
+        </strong>
+
+        <div class="small mt-1">
+
+          평가 시작 전까지 문항을
+          추가·수정·삭제할 수 있습니다.
+
+          평가가 시작되면 기존 점수의 의미가
+          변하지 않도록 문항 변경이 제한됩니다.
+
+        </div>
+
       </div>
 
-    </div>
+
+    {% else %}
 
 
-    <!-- 평가 유형 -->
+      <div class="alert alert-secondary">
+
+        <strong>
+          현재 평가 회차는
+          {{ current_round.status }} 상태입니다.
+        </strong>
+
+        <div class="small mt-1">
+
+          평가가 시작된 이후에는
+          평가 점수의 의미를 보호하기 위해
+          문항을 변경할 수 없습니다.
+
+        </div>
+
+      </div>
+
+
+    {% endif %}
+
+
+
+    <!-- ======================================
+         평가 문항 카드
+    ======================================= -->
     <div class="card border-0 shadow-sm">
 
       <div class="card-body p-4">
 
+
+        <!-- ==================================
+             TAB
+        =================================== -->
         <ul
           class="nav nav-tabs mb-4"
           id="questionTab"
           role="tablist"
         >
 
-          <li class="nav-item" role="presentation">
+
+          <li
+            class="nav-item"
+            role="presentation"
+          >
 
             <button
               class="nav-link active fw-semibold"
@@ -232,12 +423,19 @@
               type="button"
             >
               팀 평가 문항
+
+              <span class="badge text-bg-secondary ms-1">
+                {{ team_questions|length }}
+              </span>
             </button>
 
           </li>
 
 
-          <li class="nav-item" role="presentation">
+          <li
+            class="nav-item"
+            role="presentation"
+          >
 
             <button
               class="nav-link fw-semibold"
@@ -246,25 +444,39 @@
               type="button"
             >
               개인 평가 문항
+
+              <span class="badge text-bg-secondary ms-1">
+                {{ individual_questions|length }}
+              </span>
             </button>
 
           </li>
 
+
         </ul>
+
 
 
         <div class="tab-content">
 
-          <!-- ===========================
-               팀 평가 문항
-          ============================ -->
 
+          <!-- ==================================
+               팀 평가 문항
+          =================================== -->
           <div
             class="tab-pane fade show active"
             id="teamQuestions"
           >
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
+
+            <div
+              class="
+                d-flex
+                justify-content-between
+                align-items-center
+                mb-4
+              "
+            >
 
               <div>
 
@@ -278,228 +490,189 @@
 
               </div>
 
-              <button
-                type="button"
-                class="btn btn-primary"
-                data-bs-toggle="modal"
-                data-bs-target="#addTeamQuestionModal"
-              >
-                + 문항 추가
-              </button>
+
+              {% if editable %}
+
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#addTeamQuestionModal"
+                >
+                  + 문항 추가
+                </button>
+
+              {% else %}
+
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  disabled
+                >
+                  문항 추가 불가
+                </button>
+
+              {% endif %}
 
             </div>
 
 
-            <!-- 문항 1 -->
-            <div class="card border mb-3">
 
-              <div class="card-body">
-
-                <div class="row g-3 align-items-start">
-
-                  <div class="col-auto">
-
-                    <span class="badge text-bg-primary fs-6">
-                      1
-                    </span>
-
-                  </div>
+            <!-- ==============================
+                 실제 TEAM 문항
+            =============================== -->
+            {% for question in team_questions %}
 
 
-                  <div class="col">
+              <div class="card border mb-3">
 
-                    <h6 class="fw-bold mb-2">
-                      요구사항 반영도
-                    </h6>
-
-                    <p class="mb-2">
-                      프로젝트 결과물이 주어진 요구사항을 충실히 반영했나요?
-                    </p>
-
-                    <span class="badge text-bg-light">
-                      1 ~ 5점
-                    </span>
-
-                  </div>
+                <div class="card-body">
 
 
-                  <div class="col-auto">
+                  <div
+                    class="
+                      row
+                      g-3
+                      align-items-start
+                    "
+                  >
 
-                    <div class="btn-group">
 
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-outline-primary"
-                        data-bs-toggle="modal"
-                        data-bs-target="#editQuestionModal"
-                      >
-                        수정
-                      </button>
+                    <!-- 순번 -->
+                    <div class="col-auto">
 
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-outline-danger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteQuestionModal"
-                      >
-                        삭제
-                      </button>
+                      <span class="badge text-bg-primary fs-6">
+
+                        {{ question.display_order }}
+
+                      </span>
 
                     </div>
 
+
+
+                    <!-- 문항 -->
+                    <div class="col">
+
+                      <p class="fw-semibold mb-2">
+
+                        {{ question.question_text }}
+
+                      </p>
+
+
+                      <span class="badge text-bg-light">
+                        1 ~ 5점
+                      </span>
+
+
+                      <span class="badge text-bg-light ms-1">
+                        ID {{ question.question_id }}
+                      </span>
+
+                    </div>
+
+
+
+                    <!-- 관리 -->
+                    <div class="col-auto">
+
+
+                      {% if editable %}
+
+
+                        <div class="btn-group">
+
+
+                          <!-- 수정 -->
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-primary"
+
+                            data-bs-toggle="modal"
+
+                            data-bs-target="#editQuestionModal{{ question.question_id }}"
+                          >
+                            수정
+                          </button>
+
+
+                          <!-- 삭제 -->
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger"
+
+                            data-bs-toggle="modal"
+
+                            data-bs-target="#deleteQuestionModal{{ question.question_id }}"
+                          >
+                            삭제
+                          </button>
+
+
+                        </div>
+
+
+                      {% else %}
+
+
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-secondary"
+                          disabled
+                        >
+                          변경 불가
+                        </button>
+
+
+                      {% endif %}
+
+
+                    </div>
+
+
                   </div>
+
 
                 </div>
 
               </div>
 
-            </div>
+
+            {% empty %}
 
 
-            <!-- 문항 2 -->
-            <div class="card border mb-3">
+              <div class="alert alert-secondary mb-0">
 
-              <div class="card-body">
-
-                <div class="row g-3 align-items-start">
-
-                  <div class="col-auto">
-
-                    <span class="badge text-bg-primary fs-6">
-                      2
-                    </span>
-
-                  </div>
-
-
-                  <div class="col">
-
-                    <h6 class="fw-bold mb-2">
-                      발표 구성
-                    </h6>
-
-                    <p class="mb-2">
-                      발표 내용이 이해하기 쉽고 논리적으로 구성되었나요?
-                    </p>
-
-                    <span class="badge text-bg-light">
-                      1 ~ 5점
-                    </span>
-
-                  </div>
-
-
-                  <div class="col-auto">
-
-                    <div class="btn-group">
-
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-outline-primary"
-                        data-bs-toggle="modal"
-                        data-bs-target="#editQuestionModal"
-                      >
-                        수정
-                      </button>
-
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-outline-danger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteQuestionModal"
-                      >
-                        삭제
-                      </button>
-
-                    </div>
-
-                  </div>
-
-                </div>
+                등록된 팀 평가 문항이 없습니다.
 
               </div>
 
-            </div>
 
+            {% endfor %}
 
-            <!-- 문항 3 -->
-            <div class="card border">
-
-              <div class="card-body">
-
-                <div class="row g-3 align-items-start">
-
-                  <div class="col-auto">
-
-                    <span class="badge text-bg-primary fs-6">
-                      3
-                    </span>
-
-                  </div>
-
-
-                  <div class="col">
-
-                    <h6 class="fw-bold mb-2">
-                      결과물 완성도
-                    </h6>
-
-                    <p class="mb-2">
-                      팀의 아이디어와 결과물의 완성도가 높다고 생각하나요?
-                    </p>
-
-                    <span class="badge text-bg-light">
-                      1 ~ 5점
-                    </span>
-
-                  </div>
-
-
-                  <div class="col-auto">
-
-                    <div class="btn-group">
-
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-outline-primary"
-                        data-bs-toggle="modal"
-                        data-bs-target="#editQuestionModal"
-                      >
-                        수정
-                      </button>
-
-                      <button
-                        type="button"
-                        class="btn btn-sm btn-outline-danger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteQuestionModal"
-                      >
-                        삭제
-                      </button>
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
 
           </div>
 
 
-          <!-- ===========================
-               개인 평가 문항
-          ============================ -->
 
+          <!-- ==================================
+               개인 평가 문항
+          =================================== -->
           <div
             class="tab-pane fade"
             id="individualQuestions"
           >
 
-            <div class="d-flex justify-content-between align-items-center mb-4">
+
+            <div
+              class="
+                d-flex
+                justify-content-between
+                align-items-center
+                mb-4
+              "
+            >
 
               <div>
 
@@ -513,210 +686,170 @@
 
               </div>
 
-              <button
-                type="button"
-                class="btn btn-primary"
-                data-bs-toggle="modal"
-                data-bs-target="#addIndividualQuestionModal"
-              >
-                + 문항 추가
-              </button>
+
+              {% if editable %}
+
+                <button
+                  type="button"
+                  class="btn btn-primary"
+                  data-bs-toggle="modal"
+                  data-bs-target="#addIndividualQuestionModal"
+                >
+                  + 문항 추가
+                </button>
+
+              {% else %}
+
+                <button
+                  type="button"
+                  class="btn btn-secondary"
+                  disabled
+                >
+                  문항 추가 불가
+                </button>
+
+              {% endif %}
 
             </div>
 
 
-            <!-- 개인 문항 1 -->
-            <div class="card border mb-3">
 
-              <div class="card-body">
-
-                <div class="row g-3 align-items-start">
-
-                  <div class="col-auto">
-
-                    <span class="badge text-bg-primary fs-6">
-                      1
-                    </span>
-
-                  </div>
+            <!-- ==============================
+                 실제 INDIVIDUAL 문항
+            =============================== -->
+            {% for question in individual_questions %}
 
 
-                  <div class="col">
+              <div class="card border mb-3">
 
-                    <h6 class="fw-bold mb-2">
-                      참여도
-                    </h6>
-
-                    <p class="mb-2">
-                      팀 프로젝트에 적극적으로 참여했나요?
-                    </p>
-
-                    <span class="badge text-bg-light">
-                      1 ~ 5점
-                    </span>
-
-                  </div>
+                <div class="card-body">
 
 
-                  <div class="col-auto">
+                  <div
+                    class="
+                      row
+                      g-3
+                      align-items-start
+                    "
+                  >
 
-                    <div class="btn-group">
 
-                      <button
-                        class="btn btn-sm btn-outline-primary"
-                        data-bs-toggle="modal"
-                        data-bs-target="#editQuestionModal"
-                      >
-                        수정
-                      </button>
+                    <!-- 순번 -->
+                    <div class="col-auto">
 
-                      <button
-                        class="btn btn-sm btn-outline-danger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteQuestionModal"
-                      >
-                        삭제
-                      </button>
+                      <span class="badge text-bg-primary fs-6">
+
+                        {{ question.display_order }}
+
+                      </span>
 
                     </div>
 
+
+
+                    <!-- 문항 -->
+                    <div class="col">
+
+                      <p class="fw-semibold mb-2">
+
+                        {{ question.question_text }}
+
+                      </p>
+
+
+                      <span class="badge text-bg-light">
+                        1 ~ 5점
+                      </span>
+
+
+                      <span class="badge text-bg-light ms-1">
+                        ID {{ question.question_id }}
+                      </span>
+
+                    </div>
+
+
+
+                    <!-- 관리 -->
+                    <div class="col-auto">
+
+
+                      {% if editable %}
+
+
+                        <div class="btn-group">
+
+
+                          <!-- 수정 -->
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-primary"
+
+                            data-bs-toggle="modal"
+
+                            data-bs-target="#editQuestionModal{{ question.question_id }}"
+                          >
+                            수정
+                          </button>
+
+
+                          <!-- 삭제 -->
+                          <button
+                            type="button"
+                            class="btn btn-sm btn-outline-danger"
+
+                            data-bs-toggle="modal"
+
+                            data-bs-target="#deleteQuestionModal{{ question.question_id }}"
+                          >
+                            삭제
+                          </button>
+
+
+                        </div>
+
+
+                      {% else %}
+
+
+                        <button
+                          type="button"
+                          class="btn btn-sm btn-outline-secondary"
+                          disabled
+                        >
+                          변경 불가
+                        </button>
+
+
+                      {% endif %}
+
+
+                    </div>
+
+
                   </div>
+
 
                 </div>
 
               </div>
 
-            </div>
+
+            {% empty %}
 
 
-            <!-- 개인 문항 2 -->
-            <div class="card border mb-3">
+              <div class="alert alert-secondary mb-0">
 
-              <div class="card-body">
-
-                <div class="row g-3 align-items-start">
-
-                  <div class="col-auto">
-
-                    <span class="badge text-bg-primary fs-6">
-                      2
-                    </span>
-
-                  </div>
-
-
-                  <div class="col">
-
-                    <h6 class="fw-bold mb-2">
-                      책임감
-                    </h6>
-
-                    <p class="mb-2">
-                      맡은 역할과 업무를 책임감 있게 수행했나요?
-                    </p>
-
-                    <span class="badge text-bg-light">
-                      1 ~ 5점
-                    </span>
-
-                  </div>
-
-
-                  <div class="col-auto">
-
-                    <div class="btn-group">
-
-                      <button
-                        class="btn btn-sm btn-outline-primary"
-                        data-bs-toggle="modal"
-                        data-bs-target="#editQuestionModal"
-                      >
-                        수정
-                      </button>
-
-                      <button
-                        class="btn btn-sm btn-outline-danger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteQuestionModal"
-                      >
-                        삭제
-                      </button>
-
-                    </div>
-
-                  </div>
-
-                </div>
+                등록된 개인 평가 문항이 없습니다.
 
               </div>
 
-            </div>
 
+            {% endfor %}
 
-            <!-- 개인 문항 3 -->
-            <div class="card border">
-
-              <div class="card-body">
-
-                <div class="row g-3 align-items-start">
-
-                  <div class="col-auto">
-
-                    <span class="badge text-bg-primary fs-6">
-                      3
-                    </span>
-
-                  </div>
-
-
-                  <div class="col">
-
-                    <h6 class="fw-bold mb-2">
-                      협업
-                    </h6>
-
-                    <p class="mb-2">
-                      팀원들과 원활하게 소통하고 협업했나요?
-                    </p>
-
-                    <span class="badge text-bg-light">
-                      1 ~ 5점
-                    </span>
-
-                  </div>
-
-
-                  <div class="col-auto">
-
-                    <div class="btn-group">
-
-                      <button
-                        class="btn btn-sm btn-outline-primary"
-                        data-bs-toggle="modal"
-                        data-bs-target="#editQuestionModal"
-                      >
-                        수정
-                      </button>
-
-                      <button
-                        class="btn btn-sm btn-outline-danger"
-                        data-bs-toggle="modal"
-                        data-bs-target="#deleteQuestionModal"
-                      >
-                        삭제
-                      </button>
-
-                    </div>
-
-                  </div>
-
-                </div>
-
-              </div>
-
-            </div>
 
           </div>
+
 
         </div>
 
@@ -724,19 +857,67 @@
 
     </div>
 
-  </main>
+
+  {% endif %}
 
 
-  <!-- 팀 평가 문항 추가 -->
-  <div
-    class="modal fade"
-    id="addTeamQuestionModal"
-    tabindex="-1"
-  >
+</main>
 
-    <div class="modal-dialog modal-dialog-centered">
 
-      <div class="modal-content">
+
+<!-- ==========================================
+     이하 Modal은 READY일 때만 생성
+========================================== -->
+{% if current_round and editable %}
+
+
+
+<!-- ==========================================
+     TEAM 문항 추가
+========================================== -->
+<div
+  class="modal fade"
+  id="addTeamQuestionModal"
+  tabindex="-1"
+>
+
+
+  <div class="modal-dialog modal-dialog-centered">
+
+
+    <div class="modal-content">
+
+
+      <form
+        method="POST"
+        action="{% url 'admin_evaluation_questions' %}"
+      >
+
+
+        {% csrf_token %}
+
+
+        <input
+          type="hidden"
+          name="action"
+          value="create"
+        >
+
+
+        <input
+          type="hidden"
+          name="round_id"
+          value="{{ current_round.round_id }}"
+        >
+
+
+        <input
+          type="hidden"
+          name="question_type"
+          value="TEAM"
+        >
+
+
 
         <div class="modal-header">
 
@@ -748,26 +929,14 @@
             type="button"
             class="btn-close"
             data-bs-dismiss="modal"
-          ></button>
+          >
+          </button>
 
         </div>
 
 
+
         <div class="modal-body">
-
-          <div class="mb-3">
-
-            <label class="form-label fw-semibold">
-              문항 제목
-            </label>
-
-            <input
-              type="text"
-              class="form-control"
-              placeholder="예: 창의성"
-            >
-
-          </div>
 
 
           <div class="mb-3">
@@ -776,13 +945,17 @@
               평가 문항
             </label>
 
+
             <textarea
+              name="question_text"
               class="form-control"
               rows="4"
-              placeholder="평가 질문을 입력하세요"
+              placeholder="예: 프로젝트 결과물이 요구사항을 충실히 반영했나요?"
+              required
             ></textarea>
 
           </div>
+
 
 
           <div>
@@ -791,57 +964,101 @@
               평가 척도
             </label>
 
-            <select
-              class="form-select"
+
+            <input
+              type="text"
+              class="form-control"
+              value="1 ~ 5점"
               disabled
             >
 
-              <option selected>
-                1 ~ 5점
-              </option>
-
-            </select>
-
           </div>
+
 
         </div>
 
 
+
         <div class="modal-footer">
 
+
           <button
+            type="button"
             class="btn btn-outline-secondary"
             data-bs-dismiss="modal"
           >
             취소
           </button>
 
+
           <button
+            type="submit"
             class="btn btn-primary"
-            data-bs-dismiss="modal"
           >
             추가
           </button>
 
+
         </div>
 
-      </div>
+
+      </form>
+
 
     </div>
 
   </div>
 
+</div>
 
-  <!-- 개인 평가 문항 추가 -->
-  <div
-    class="modal fade"
-    id="addIndividualQuestionModal"
-    tabindex="-1"
-  >
 
-    <div class="modal-dialog modal-dialog-centered">
 
-      <div class="modal-content">
+<!-- ==========================================
+     개인 문항 추가
+========================================== -->
+<div
+  class="modal fade"
+  id="addIndividualQuestionModal"
+  tabindex="-1"
+>
+
+
+  <div class="modal-dialog modal-dialog-centered">
+
+
+    <div class="modal-content">
+
+
+      <form
+        method="POST"
+        action="{% url 'admin_evaluation_questions' %}"
+      >
+
+
+        {% csrf_token %}
+
+
+        <input
+          type="hidden"
+          name="action"
+          value="create"
+        >
+
+
+        <input
+          type="hidden"
+          name="round_id"
+          value="{{ current_round.round_id }}"
+        >
+
+
+        <input
+          type="hidden"
+          name="question_type"
+          value="INDIVIDUAL"
+        >
+
+
 
         <div class="modal-header">
 
@@ -853,26 +1070,14 @@
             type="button"
             class="btn-close"
             data-bs-dismiss="modal"
-          ></button>
+          >
+          </button>
 
         </div>
 
 
+
         <div class="modal-body">
-
-          <div class="mb-3">
-
-            <label class="form-label fw-semibold">
-              문항 제목
-            </label>
-
-            <input
-              type="text"
-              class="form-control"
-              placeholder="예: 문제 해결"
-            >
-
-          </div>
 
 
           <div class="mb-3">
@@ -881,13 +1086,17 @@
               평가 문항
             </label>
 
+
             <textarea
+              name="question_text"
               class="form-control"
               rows="4"
-              placeholder="평가 질문을 입력하세요"
+              placeholder="예: 팀 프로젝트에 적극적으로 참여했나요?"
+              required
             ></textarea>
 
           </div>
+
 
 
           <div>
@@ -896,159 +1105,155 @@
               평가 척도
             </label>
 
-            <select
-              class="form-select"
+
+            <input
+              type="text"
+              class="form-control"
+              value="1 ~ 5점"
               disabled
             >
 
-              <option selected>
-                1 ~ 5점
-              </option>
-
-            </select>
-
           </div>
+
 
         </div>
 
 
+
         <div class="modal-footer">
 
+
           <button
+            type="button"
             class="btn btn-outline-secondary"
             data-bs-dismiss="modal"
           >
             취소
           </button>
 
+
           <button
+            type="submit"
             class="btn btn-primary"
-            data-bs-dismiss="modal"
           >
             추가
           </button>
 
+
         </div>
 
-      </div>
+
+      </form>
+
 
     </div>
 
   </div>
 
+</div>
 
-  <!-- 문항 수정 -->
+
+
+<!-- ==========================================
+     TEAM 문항 수정 / 삭제 Modal
+========================================== -->
+{% for question in team_questions %}
+
+
+  <!-- ========================================
+       수정
+  ========================================= -->
   <div
     class="modal fade"
-    id="editQuestionModal"
+    id="editQuestionModal{{ question.question_id }}"
     tabindex="-1"
   >
 
+
     <div class="modal-dialog modal-dialog-centered">
+
 
       <div class="modal-content">
 
-        <div class="modal-header">
 
-          <h5 class="modal-title fw-bold">
-            평가 문항 수정
-          </h5>
-
-          <button
-            type="button"
-            class="btn-close"
-            data-bs-dismiss="modal"
-          ></button>
-
-        </div>
+        <form
+          method="POST"
+          action="{% url 'admin_evaluation_questions' %}"
+        >
 
 
-        <div class="modal-body">
-
-          <div class="alert alert-warning small">
-            READY 상태에서만 문항을 수정할 수 있습니다.
-          </div>
+          {% csrf_token %}
 
 
-          <div class="mb-3">
+          <input
+            type="hidden"
+            name="action"
+            value="update"
+          >
 
-            <label class="form-label fw-semibold">
-              문항 제목
-            </label>
 
-            <input
-              type="text"
-              class="form-control"
-              value="요구사항 반영도"
+          <input
+            type="hidden"
+            name="round_id"
+            value="{{ current_round.round_id }}"
+          >
+
+
+          <input
+            type="hidden"
+            name="question_id"
+            value="{{ question.question_id }}"
+          >
+
+
+
+          <div class="modal-header">
+
+            <h5 class="modal-title fw-bold">
+              팀 평가 문항 수정
+            </h5>
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
             >
+            </button>
 
           </div>
 
 
-          <div>
+
+          <div class="modal-body">
+
+
+            <div class="alert alert-warning small">
+
+              READY 상태에서만
+              평가 문항을 수정할 수 있습니다.
+
+            </div>
+
 
             <label class="form-label fw-semibold">
               평가 문항
             </label>
 
+
             <textarea
+              name="question_text"
               class="form-control"
-              rows="4"
-            >프로젝트 결과물이 주어진 요구사항을 충실히 반영했나요?</textarea>
+              rows="5"
+              required
+            >{{ question.question_text }}</textarea>
+
 
           </div>
 
-        </div>
 
 
-        <div class="modal-footer">
+          <div class="modal-footer">
 
-          <button
-            class="btn btn-outline-secondary"
-            data-bs-dismiss="modal"
-          >
-            취소
-          </button>
-
-          <button
-            class="btn btn-primary"
-            data-bs-dismiss="modal"
-          >
-            저장
-          </button>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </div>
-
-
-  <!-- 삭제 확인 -->
-  <div
-    class="modal fade"
-    id="deleteQuestionModal"
-    tabindex="-1"
-  >
-
-    <div class="modal-dialog modal-dialog-centered">
-
-      <div class="modal-content">
-
-        <div class="modal-body text-center p-5">
-
-          <h4 class="fw-bold mb-3">
-            문항을 삭제하시겠습니까?
-          </h4>
-
-          <p class="text-muted mb-4">
-            삭제한 문항은 복구할 수 없습니다.
-          </p>
-
-
-          <div class="d-flex justify-content-center gap-2">
 
             <button
               type="button"
@@ -1058,17 +1263,20 @@
               취소
             </button>
 
+
             <button
-              type="button"
-              class="btn btn-danger"
-              data-bs-dismiss="modal"
+              type="submit"
+              class="btn btn-primary"
             >
-              삭제
+              저장
             </button>
+
 
           </div>
 
-        </div>
+
+        </form>
+
 
       </div>
 
@@ -1077,9 +1285,376 @@
   </div>
 
 
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-  ></script>
+
+  <!-- ========================================
+       삭제
+  ========================================= -->
+  <div
+    class="modal fade"
+    id="deleteQuestionModal{{ question.question_id }}"
+    tabindex="-1"
+  >
+
+
+    <div class="modal-dialog modal-dialog-centered">
+
+
+      <div class="modal-content">
+
+
+        <form
+          method="POST"
+          action="{% url 'admin_evaluation_questions' %}"
+        >
+
+
+          {% csrf_token %}
+
+
+          <input
+            type="hidden"
+            name="action"
+            value="delete"
+          >
+
+
+          <input
+            type="hidden"
+            name="round_id"
+            value="{{ current_round.round_id }}"
+          >
+
+
+          <input
+            type="hidden"
+            name="question_id"
+            value="{{ question.question_id }}"
+          >
+
+
+
+          <div class="modal-body text-center p-5">
+
+
+            <h4 class="fw-bold mb-3">
+              문항을 삭제하시겠습니까?
+            </h4>
+
+
+            <p class="mb-3">
+              {{ question.question_text }}
+            </p>
+
+
+            <p class="text-danger small mb-4">
+              삭제한 문항은 복구할 수 없습니다.
+            </p>
+
+
+
+            <div
+              class="
+                d-flex
+                justify-content-center
+                gap-2
+              "
+            >
+
+
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                data-bs-dismiss="modal"
+              >
+                취소
+              </button>
+
+
+              <button
+                type="submit"
+                class="btn btn-danger"
+              >
+                삭제
+              </button>
+
+
+            </div>
+
+
+          </div>
+
+
+        </form>
+
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+{% endfor %}
+
+
+
+<!-- ==========================================
+     개인 문항 수정 / 삭제 Modal
+========================================== -->
+{% for question in individual_questions %}
+
+
+  <!-- ========================================
+       수정
+  ========================================= -->
+  <div
+    class="modal fade"
+    id="editQuestionModal{{ question.question_id }}"
+    tabindex="-1"
+  >
+
+
+    <div class="modal-dialog modal-dialog-centered">
+
+
+      <div class="modal-content">
+
+
+        <form
+          method="POST"
+          action="{% url 'admin_evaluation_questions' %}"
+        >
+
+
+          {% csrf_token %}
+
+
+          <input
+            type="hidden"
+            name="action"
+            value="update"
+          >
+
+
+          <input
+            type="hidden"
+            name="round_id"
+            value="{{ current_round.round_id }}"
+          >
+
+
+          <input
+            type="hidden"
+            name="question_id"
+            value="{{ question.question_id }}"
+          >
+
+
+
+          <div class="modal-header">
+
+            <h5 class="modal-title fw-bold">
+              개인 평가 문항 수정
+            </h5>
+
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+            >
+            </button>
+
+          </div>
+
+
+
+          <div class="modal-body">
+
+
+            <div class="alert alert-warning small">
+
+              READY 상태에서만
+              평가 문항을 수정할 수 있습니다.
+
+            </div>
+
+
+            <label class="form-label fw-semibold">
+              평가 문항
+            </label>
+
+
+            <textarea
+              name="question_text"
+              class="form-control"
+              rows="5"
+              required
+            >{{ question.question_text }}</textarea>
+
+
+          </div>
+
+
+
+          <div class="modal-footer">
+
+
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              취소
+            </button>
+
+
+            <button
+              type="submit"
+              class="btn btn-primary"
+            >
+              저장
+            </button>
+
+
+          </div>
+
+
+        </form>
+
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+
+  <!-- ========================================
+       삭제
+  ========================================= -->
+  <div
+    class="modal fade"
+    id="deleteQuestionModal{{ question.question_id }}"
+    tabindex="-1"
+  >
+
+
+    <div class="modal-dialog modal-dialog-centered">
+
+
+      <div class="modal-content">
+
+
+        <form
+          method="POST"
+          action="{% url 'admin_evaluation_questions' %}"
+        >
+
+
+          {% csrf_token %}
+
+
+          <input
+            type="hidden"
+            name="action"
+            value="delete"
+          >
+
+
+          <input
+            type="hidden"
+            name="round_id"
+            value="{{ current_round.round_id }}"
+          >
+
+
+          <input
+            type="hidden"
+            name="question_id"
+            value="{{ question.question_id }}"
+          >
+
+
+
+          <div class="modal-body text-center p-5">
+
+
+            <h4 class="fw-bold mb-3">
+              문항을 삭제하시겠습니까?
+            </h4>
+
+
+            <p class="mb-3">
+              {{ question.question_text }}
+            </p>
+
+
+            <p class="text-danger small mb-4">
+              삭제한 문항은 복구할 수 없습니다.
+            </p>
+
+
+
+            <div
+              class="
+                d-flex
+                justify-content-center
+                gap-2
+              "
+            >
+
+
+              <button
+                type="button"
+                class="btn btn-outline-secondary"
+                data-bs-dismiss="modal"
+              >
+                취소
+              </button>
+
+
+              <button
+                type="submit"
+                class="btn btn-danger"
+              >
+                삭제
+              </button>
+
+
+            </div>
+
+
+          </div>
+
+
+        </form>
+
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+{% endfor %}
+
+
+{% endif %}
+
+
+
+<!-- ==========================================
+     Bootstrap JS
+========================================== -->
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+>
+</script>
+
 
 </body>
+
 </html>
