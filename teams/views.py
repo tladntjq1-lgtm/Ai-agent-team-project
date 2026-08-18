@@ -1,17 +1,144 @@
-from django.shortcuts import render
+from django.contrib import messages
+from django.shortcuts import render, redirect
 
 from members.decorators import student_required, teacher_required
+from members.models import Student
 
-# 튜터가 팀을 편성하고 결과를 확인(통계 요약, 인원 수정)하는 화면. 
-# (가중치 기반의 팀 편성 알고리즘이 실행되고, 인원 추가/제외 시 DB 트랜잭션이 안전하게 처리되어야 하는, 이 프로젝트에서 가장 복잡한 로직이 담길 곳이야.)
+from evaluations.models import Project
+
+from .models import Team, TeamMember
+
+
+# ==========================================
+# 1. 관리자 - 팀 관리
+# ==========================================
 @teacher_required
 def admin_team_management_view(request):
-    return render(request, 'teams/admin_team_management.html')
 
-# 학생이 자신의 소속 팀명과 팀원들의 상세 프로필을 확인하는 화면. 
-# (요청한 학생의 user_id를 기준으로 속한 팀 테이블을 조인(Join)하여 팀원 목록을 가져오는 쿼리가 필요해.)
+    return render(
+        request,
+        'teams/admin_team_management.html'
+    )
+
+
+# ==========================================
+# 2. 학생 - 내 팀
+# ==========================================
 @student_required
 def my_team_view(request):
-    return render(request, 'teams/my_team.html')
+
+    # ----------------------------------
+    # 로그인 학생 ID
+    # ----------------------------------
+    student_id = request.session.get(
+        'student_id'
+    )
 
 
+    # ----------------------------------
+    # 로그인 학생 정보
+    # ----------------------------------
+    student = Student.objects.filter(
+        student_id=student_id
+    ).first()
+
+
+    if not student:
+
+        messages.error(
+            request,
+            '학생 정보를 찾을 수 없습니다.'
+        )
+
+        return redirect(
+            'login'
+        )
+
+
+    # ----------------------------------
+    # 현재 팀 배정
+    # ----------------------------------
+    team_member = TeamMember.objects.filter(
+        student_id=student_id
+    ).first()
+
+
+    if not team_member:
+
+        return render(
+            request,
+            'teams/my_team.html',
+            {
+                'student': student,
+                'has_team': False,
+            }
+        )
+
+
+    # ----------------------------------
+    # 현재 팀
+    # ----------------------------------
+    team = Team.objects.filter(
+        team_id=team_member.team_id
+    ).first()
+
+
+    if not team:
+
+        return render(
+            request,
+            'teams/my_team.html',
+            {
+                'student': student,
+                'has_team': False,
+            }
+        )
+
+
+    # ----------------------------------
+    # 프로젝트
+    # ----------------------------------
+    project = Project.objects.filter(
+        project_id=team.project_id
+    ).first()
+
+
+    # ----------------------------------
+    # 같은 팀 학생 ID
+    # ----------------------------------
+    team_student_ids = TeamMember.objects.filter(
+        team_id=team.team_id
+    ).values_list(
+        'student_id',
+        flat=True
+    )
+
+
+    # ----------------------------------
+    # 실제 팀원 정보
+    # ----------------------------------
+    team_students = Student.objects.filter(
+        student_id__in=team_student_ids
+    ).order_by(
+        'student_id'
+    )
+
+
+    context = {
+        'student': student,
+
+        'team': team,
+
+        'project': project,
+
+        'team_students': team_students,
+
+        'has_team': True,
+    }
+
+
+    return render(
+        request,
+        'teams/my_team.html',
+        context
+    )

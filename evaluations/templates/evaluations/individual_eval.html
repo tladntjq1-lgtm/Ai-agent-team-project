@@ -3,72 +3,165 @@
 
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!--
-  UI ID: UI-06
-  화면명: 개인 평가
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
-  주요 기능
-  - 같은 팀원만 표시
-  - 본인 제외
-  - 개인 평가
-  - 중복 평가 방지
-  - 평가 완료 팀원 비활성화
-  -->
+  <style>
+  #individualEvaluationModal .modal-dialog {
+    max-width: 720px;
+    height: 90vh;
+    margin-top: 5vh;
+    margin-bottom: 5vh;
+  }
+
+  #individualEvaluationModal .modal-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+
+  #individualEvaluationModal form {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    min-height: 0;
+  }
+
+  #individualEvaluationModal .modal-header {
+    flex: 0 0 auto;
+  }
+
+  #individualEvaluationModal .modal-body {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto !important;
+    overscroll-behavior: contain;
+  }
+
+  #individualEvaluationModal .modal-footer {
+    flex: 0 0 auto;
+    background: white;
+    border-top: 1px solid #dee2e6;
+  }
+</style>
 
   <title>참교육 | 개인 평가</title>
 
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
 </head>
+
 
 <body class="bg-light">
 
-  <!-- 상단 네비게이션 -->
+
+  <!-- ==========================================
+       상단 네비게이션
+  =========================================== -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
     <div class="container">
 
-      <a class="navbar-brand fw-bold" href="{% url 'student_home' %}">
+      <a
+        class="navbar-brand fw-bold"
+        href="{% url 'student_home' %}"
+      >
         참교육
       </a>
 
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#studentNavbar">
+
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#studentNavbar"
+      >
         <span class="navbar-toggler-icon"></span>
       </button>
 
-      <div class="collapse navbar-collapse" id="studentNavbar">
 
-        <ul class="navbar-nav ms-auto">
+      <div
+        class="collapse navbar-collapse"
+        id="studentNavbar"
+      >
+
+        <ul class="navbar-nav ms-auto align-items-lg-center">
 
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'student_home' %}">
+
+            <a
+              class="nav-link"
+              href="{% url 'student_home' %}"
+            >
               홈
             </a>
+
           </li>
 
+
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'my_team' %}">
+
+            <a
+              class="nav-link"
+              href="{% url 'my_team' %}"
+            >
               내 팀
             </a>
+
           </li>
 
+
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'team_eval_list' %}">
+
+            <a
+              class="nav-link"
+              href="{% url 'team_eval_list' %}"
+            >
               팀 평가
             </a>
+
           </li>
 
+
           <li class="nav-item">
-            <a class="nav-link active" href="{% url 'individual_eval' %}">
+
+            <a
+              class="nav-link active"
+              href="{% url 'individual_eval' %}"
+            >
               개인 평가
             </a>
+
           </li>
 
+
           <li class="nav-item">
-            <a class="nav-link" href="{% url 'report' %}">
+
+            <a
+              class="nav-link"
+              href="{% url 'report' %}"
+            >
               리포트
             </a>
+
+          </li>
+
+
+          <li class="nav-item ms-lg-3">
+
+            <a
+              class="btn btn-outline-light btn-sm"
+              href="{% url 'logout' %}"
+            >
+              로그아웃
+            </a>
+
           </li>
 
         </ul>
@@ -80,7 +173,12 @@
   </nav>
 
 
+
+  <!-- ==========================================
+       메인
+  =========================================== -->
   <main class="container py-5">
+
 
     <!-- 제목 -->
     <div class="mb-4">
@@ -96,13 +194,52 @@
     </div>
 
 
-    <!-- 현재 평가 정보 -->
+    <!-- ==========================================
+         Django 메시지
+    =========================================== -->
+    {% if messages %}
+
+      {% for message in messages %}
+
+        <div
+          class="
+            alert
+
+            {% if message.tags == 'success' %}
+              alert-success
+
+            {% elif message.tags == 'error' %}
+              alert-danger
+
+            {% elif message.tags == 'warning' %}
+              alert-warning
+
+            {% else %}
+              alert-info
+
+            {% endif %}
+          "
+        >
+          {{ message }}
+        </div>
+
+      {% endfor %}
+
+    {% endif %}
+
+
+
+    <!-- ==========================================
+         현재 평가 정보
+    =========================================== -->
     <div class="card border-0 shadow-sm mb-4">
 
       <div class="card-body p-4">
 
         <div class="row g-4">
 
+
+          <!-- 프로젝트 -->
           <div class="col-md-4">
 
             <p class="text-muted small mb-1">
@@ -110,12 +247,19 @@
             </p>
 
             <h5 class="fw-bold mb-0">
-              참교육 프로젝트
+
+              {% if project %}
+                {{ project.project_name }}
+              {% else %}
+                프로젝트 없음
+              {% endif %}
+
             </h5>
 
           </div>
 
 
+          <!-- 팀 -->
           <div class="col-md-4">
 
             <p class="text-muted small mb-1">
@@ -123,12 +267,19 @@
             </p>
 
             <h5 class="fw-bold mb-0">
-              3팀
+
+              {% if my_team %}
+                {{ my_team.team_name }}
+              {% else %}
+                팀 없음
+              {% endif %}
+
             </h5>
 
           </div>
 
 
+          <!-- 평가 회차 -->
           <div class="col-md-4">
 
             <p class="text-muted small mb-1">
@@ -136,10 +287,17 @@
             </p>
 
             <h5 class="fw-bold mb-0">
-              2차 프로젝트 평가
+
+              {% if current_round %}
+                {{ current_round.round_name }}
+              {% else %}
+                평가 회차 없음
+              {% endif %}
+
             </h5>
 
           </div>
+
 
         </div>
 
@@ -148,22 +306,33 @@
     </div>
 
 
-    <!-- 안내 -->
+
+    <!-- ==========================================
+         안내
+    =========================================== -->
     <div class="alert alert-primary">
 
-      <strong>본인은 평가 대상에서 제외</strong>됩니다.
+      <strong>
+        본인은 평가 대상에서 제외
+      </strong>
+      됩니다.
 
       이미 평가가 완료된 팀원은 다시 평가할 수 없습니다.
 
     </div>
 
 
-    <!-- 진행률 -->
+
+    <!-- ==========================================
+         진행률
+    =========================================== -->
     <div class="card border-0 shadow-sm mb-4">
 
       <div class="card-body p-4">
 
-        <div class="d-flex justify-content-between align-items-center mb-3">
+        <div
+          class="d-flex justify-content-between align-items-center mb-3"
+        >
 
           <div>
 
@@ -172,22 +341,43 @@
             </h5>
 
             <p class="text-muted small mb-0">
-              평가 대상 3명 중 1명 평가 완료
+
+              평가 대상
+              {{ target_student_count }}명 중
+
+              {{ completed_student_count }}명 평가 완료
+
             </p>
 
           </div>
 
+
           <span class="badge text-bg-primary fs-6">
-            1 / 3 완료
+
+            {{ completed_student_count }}
+            /
+            {{ target_student_count }}
+
+            완료
+
           </span>
 
         </div>
 
 
-        <div class="progress" role="progressbar" aria-valuenow="25" aria-valuemin="0" aria-valuemax="100">
+        <div
+          class="progress"
+          role="progressbar"
+          aria-valuenow="{{ individual_progress }}"
+          aria-valuemin="0"
+          aria-valuemax="100"
+        >
 
-          <div class="progress-bar w-25">
-            25%
+          <div
+            class="progress-bar"
+            style="width: {{ individual_progress }}%;"
+          >
+            {{ individual_progress }}%
           </div>
 
         </div>
@@ -197,8 +387,13 @@
     </div>
 
 
-    <!-- 팀원 목록 -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
+
+    <!-- ==========================================
+         평가 대상 제목
+    =========================================== -->
+    <div
+      class="d-flex justify-content-between align-items-center mb-3"
+    >
 
       <div>
 
@@ -212,6 +407,7 @@
 
       </div>
 
+
       <span class="badge text-bg-secondary">
         본인 제외
       </span>
@@ -219,86 +415,169 @@
     </div>
 
 
+
+    <!-- ==========================================
+         실제 DB 팀원 목록
+    =========================================== -->
     <div class="row g-4">
 
 
-      <!-- 이학생 -->
-      <div class="col-md-6 col-xl-4">
+      {% for target in target_students %}
 
-        <div class="card border-0 shadow-sm h-100">
 
-          <div class="card-body p-4">
+        <div class="col-md-6 col-xl-4">
 
-            <div class="d-flex justify-content-between align-items-start mb-3">
+          <div
+            class="
+              card
+              border-0
+              shadow-sm
+              h-100
 
-              <div>
+              {% if target.student_id in completed_student_ids %}
+                bg-body-secondary
+              {% endif %}
+            "
+          >
 
-                <h4 class="fw-bold mb-1">
-                  이학생
-                </h4>
+            <div class="card-body p-4">
 
-                <span class="badge text-bg-warning">
-                  평가 대기
+
+              <!-- 이름 / 상태 -->
+              <div
+                class="d-flex justify-content-between align-items-start mb-3"
+              >
+
+                <div>
+
+                  <h4 class="fw-bold mb-1">
+                    {{ target.name }}
+                  </h4>
+
+
+                  {% if target.student_id in completed_student_ids %}
+
+                    <span class="badge text-bg-success">
+                      평가 완료
+                    </span>
+
+                  {% else %}
+
+                    <span class="badge text-bg-warning">
+                      평가 대기
+                    </span>
+
+                  {% endif %}
+
+                </div>
+
+
+                <span class="badge text-bg-light">
+                  팀원
                 </span>
 
               </div>
 
-              <span class="badge text-bg-light">
-                팀원
-              </span>
 
-            </div>
+              <hr>
 
 
-            <hr>
+              <!-- 이메일 -->
+              <div class="mb-3">
 
+                <p class="text-muted small mb-1">
+                  이메일
+                </p>
 
-            <div class="mb-3">
+                <div class="fw-semibold">
 
-              <p class="text-muted small mb-1">
-                이메일
-              </p>
+                  {% if target.email %}
+                    {{ target.email }}
+                  {% else %}
+                    미등록
+                  {% endif %}
 
-              <div class="fw-semibold">
-                student02@email.com
+                </div>
+
               </div>
 
-            </div>
 
+              <!-- Slack -->
+              <div class="mb-3">
 
-            <div class="mb-3">
+                <p class="text-muted small mb-1">
+                  Slack ID
+                </p>
 
-              <p class="text-muted small mb-1">
-                Slack ID
-              </p>
+                <div class="fw-semibold">
 
-              <div class="fw-semibold">
-                @student02
+                  {% if target.slack_id %}
+                    {{ target.slack_id }}
+                  {% else %}
+                    미등록
+                  {% endif %}
+
+                </div>
+
               </div>
 
-            </div>
 
+              <!-- 전화번호 -->
+              <div class="mb-4">
 
-            <div class="mb-4">
+                <p class="text-muted small mb-1">
+                  전화번호
+                </p>
 
-              <p class="text-muted small mb-1">
-                전화번호
-              </p>
+                <div class="fw-semibold">
 
-              <div class="fw-semibold">
-                010-2345-6789
+                  {% if target.phone %}
+                    {{ target.phone }}
+                  {% else %}
+                    미등록
+                  {% endif %}
+
+                </div>
+
               </div>
 
-            </div>
+
+              <!-- 평가 버튼 -->
+              <div class="d-grid">
 
 
-            <div class="d-grid">
+                {% if target.student_id in completed_student_ids %}
 
-              <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                data-bs-target="#individualEvaluationModal"
-                onclick="selectStudent('이학생', 'student02@email.com', '@student02')">
-                평가하기
-              </button>
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    disabled
+                  >
+                    평가 완료
+                  </button>
+
+
+                {% else %}
+
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+
+                    data-bs-toggle="modal"
+                    data-bs-target="#individualEvaluationModal"
+
+                    data-student-id="{{ target.student_id }}"
+                    data-student-name="{{ target.name }}"
+                    data-student-email="{{ target.email|default:'미등록' }}"
+                    data-student-slack="{{ target.slack_id|default:'미등록' }}"
+                  >
+                    평가하기
+                  </button>
+
+                {% endif %}
+
+
+              </div>
 
             </div>
 
@@ -306,342 +585,452 @@
 
         </div>
 
-      </div>
+
+      {% empty %}
 
 
-      <!-- 박학생 / 평가 완료 -->
-      <div class="col-md-6 col-xl-4">
+        <div class="col-12">
 
-        <div class="card border-0 shadow-sm h-100 bg-body-secondary">
-
-          <div class="card-body p-4">
-
-            <div class="d-flex justify-content-between align-items-start mb-3">
-
-              <div>
-
-                <h4 class="fw-bold mb-1">
-                  박학생
-                </h4>
-
-                <span class="badge text-bg-success">
-                  평가 완료
-                </span>
-
-              </div>
-
-              <span class="badge text-bg-light">
-                팀원
-              </span>
-
-            </div>
-
-
-            <hr>
-
-
-            <div class="mb-3">
-
-              <p class="text-muted small mb-1">
-                이메일
-              </p>
-
-              <div class="fw-semibold">
-                student03@email.com
-              </div>
-
-            </div>
-
-
-            <div class="mb-3">
-
-              <p class="text-muted small mb-1">
-                Slack ID
-              </p>
-
-              <div class="fw-semibold">
-                @student03
-              </div>
-
-            </div>
-
-
-            <div class="mb-4">
-
-              <p class="text-muted small mb-1">
-                전화번호
-              </p>
-
-              <div class="fw-semibold">
-                010-3456-7890
-              </div>
-
-            </div>
-
-
-            <div class="d-grid">
-
-              <button type="button" class="btn btn-secondary" disabled>
-                평가 완료
-              </button>
-
-            </div>
-
+          <div class="alert alert-secondary">
+            현재 평가할 수 있는 팀원이 없습니다.
           </div>
 
         </div>
 
-      </div>
 
+      {% endfor %}
 
-      <!-- 최학생 -->
-      <div class="col-md-6 col-xl-4">
-
-        <div class="card border-0 shadow-sm h-100">
-
-          <div class="card-body p-4">
-
-            <div class="d-flex justify-content-between align-items-start mb-3">
-
-              <div>
-
-                <h4 class="fw-bold mb-1">
-                  최학생
-                </h4>
-
-                <span class="badge text-bg-warning">
-                  평가 대기
-                </span>
-
-              </div>
-
-              <span class="badge text-bg-light">
-                팀원
-              </span>
-
-            </div>
-
-
-            <hr>
-
-
-            <div class="mb-3">
-
-              <p class="text-muted small mb-1">
-                이메일
-              </p>
-
-              <div class="fw-semibold">
-                student04@email.com
-              </div>
-
-            </div>
-
-
-            <div class="mb-3">
-
-              <p class="text-muted small mb-1">
-                Slack ID
-              </p>
-
-              <div class="fw-semibold">
-                @student04
-              </div>
-
-            </div>
-
-
-            <div class="mb-4">
-
-              <p class="text-muted small mb-1">
-                전화번호
-              </p>
-
-              <div class="fw-semibold">
-                010-4567-8901
-              </div>
-
-            </div>
-
-
-            <div class="d-grid">
-
-              <button type="button" class="btn btn-primary" data-bs-toggle="modal"
-                data-bs-target="#individualEvaluationModal"
-                onclick="selectStudent('이학생', 'student02@email.com', '@student02')">
-                평가하기
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
 
     </div>
+
 
   </main>
 
 
-  <!-- =========================================
-       개인 평가 모달
-  ========================================== -->
-  
-  <div class="modal fade" id="individualEvaluationModal" tabindex="-1" aria-labelledby="individualModalLabel"
-    aria-hidden="true">
-    <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
+
+  <!-- ==========================================
+       개인 평가 공용 모달
+  =========================================== -->
+  <div
+    class="modal fade"
+    id="individualEvaluationModal"
+    tabindex="-1"
+    aria-labelledby="individualModalLabel"
+    aria-hidden="true"
+  >
+
+    <div
+      class="
+        modal-dialog
+        modal-lg
+        modal-dialog-centered
+        modal-dialog-scrollable
+      "
+    >
+
       <div class="modal-content">
 
-        <div class="modal-header">
-          <div>
-            <h5 class="modal-title fw-bold" id="individualModalLabel">개인 평가</h5>
-            <small class="text-muted">
-              평가 대상: <strong id="selectedStudentName">이학생</strong>
-            </small>
-          </div>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
 
-        <!-- 여기서 form이 모달 전체를 감싸야 함 -->
-        <form method="POST" action="{% url 'individual_eval' %}">
+        <!-- ======================================
+             FORM
+        ======================================= -->
+        <form
+          method="POST"
+          action="{% url 'individual_eval' %}"
+          id="individualEvaluationForm"
+        >
+
           {% csrf_token %}
 
+
+          <!-- 평가 대상 학생 ID -->
+          <input
+            type="hidden"
+            name="target_student_id"
+            id="targetStudentId"
+          >
+
+
+          <!-- ====================================
+               Modal Header
+          ===================================== -->
+          <div class="modal-header">
+
+            <div>
+
+              <h5
+                class="modal-title fw-bold"
+                id="individualModalLabel"
+              >
+                개인 평가
+              </h5>
+
+              <small class="text-muted">
+
+                평가 대상:
+
+                <strong id="selectedStudentName">
+                  -
+                </strong>
+
+              </small>
+
+            </div>
+
+
+            <button
+              type="button"
+              class="btn-close"
+              data-bs-dismiss="modal"
+              aria-label="닫기"
+            >
+            </button>
+
+          </div>
+
+
+
+          <!-- ====================================
+               Modal Body
+          ===================================== -->
           <div class="modal-body p-4">
-            <!-- 평가 대상 정보 -->
+
+
+            <!-- 학생 정보 -->
             <div class="card bg-light border mb-4">
+
               <div class="card-body">
-                <p class="text-muted small mb-1">평가 대상 학생</p>
-                <h5 class="fw-bold mb-2" id="studentNameDetail">이학생</h5>
-                <p class="text-muted small mb-0">
-                  <span id="studentEmailDetail">student02@email.com</span> ·
-                  <span id="studentSlackDetail">@student02</span>
+
+                <p class="text-muted small mb-1">
+                  평가 대상 학생
                 </p>
+
+                <h5
+                  class="fw-bold mb-2"
+                  id="studentNameDetail"
+                >
+                  -
+                </h5>
+
+                <p class="text-muted small mb-0">
+
+                  <span id="studentEmailDetail">
+                    -
+                  </span>
+
+                  ·
+
+                  <span id="studentSlackDetail">
+                    -
+                  </span>
+
+                </p>
+
               </div>
+
             </div>
 
-            <div class="alert alert-light border mb-3">각 평가 문항에 대해 1점부터 5점까지 선택해주세요.</div>
 
+            <div class="alert alert-light border mb-4">
+
+              각 평가 문항에 대해
+              1점부터 5점까지 선택해주세요.
+
+            </div>
+
+
+            <!-- ==================================
+                 실제 DB 개인 평가 문항
+            =================================== -->
             {% for question in questions %}
-            <div class="card border mb-3">
-              <div class="card-body">
-                <div class="d-flex gap-3">
-                  <span class="badge text-bg-primary align-self-start">{{ forloop.counter }}</span>
-                  <div class="flex-grow-1">
-                    <h6 class="fw-bold mb-2">{{ question.text }}</h6>
-                    <div class="btn-group" role="group">
-                      {% for i in "12345" %}
-                      <input type="radio" class="btn-check" name="score_{{ question.id }}"
-                        id="ind-q{{ question.id }}-{{ i }}" value="{{ i }}" required>
-                      <label class="btn btn-outline-primary" for="ind-q{{ question.id }}-{{ i }}">{{ i }}점</label>
-                      {% endfor %}
+
+
+              <div class="card border mb-3">
+
+                <div class="card-body">
+
+
+                  <div class="d-flex gap-3">
+
+
+                    <!-- 문항 번호 -->
+                    <span
+                      class="badge text-bg-primary align-self-start"
+                    >
+                      {{ forloop.counter }}
+                    </span>
+
+
+                    <div class="flex-grow-1">
+
+
+                      <!-- 실제 DB 문항 내용 -->
+                      <h6 class="fw-bold mb-3">
+
+                        {{ question.question_text }}
+
+                      </h6>
+
+
+                      <!-- ========================
+                           1 ~ 5점
+                      ========================= -->
+                      <div
+                        class="btn-group flex-wrap"
+                        role="group"
+                        aria-label="{{ forloop.counter }}번 평가"
+                      >
+
+
+                        {% for score in "12345" %}
+
+
+                          <input
+                            type="radio"
+                            class="btn-check"
+
+                            name="question_{{ question.question_id }}"
+
+                            id="individual_q{{ question.question_id }}_score{{ score }}"
+
+                            value="{{ score }}"
+
+                            autocomplete="off"
+
+                            required
+                          >
+
+
+                          <label
+                            class="btn btn-outline-primary"
+
+                            for="individual_q{{ question.question_id }}_score{{ score }}"
+                          >
+
+                            {{ score }}점
+
+                          </label>
+
+
+                        {% endfor %}
+
+
+                      </div>
+
                     </div>
+
                   </div>
+
                 </div>
+
               </div>
-            </div>
+
+
+            {% empty %}
+
+
+              <div class="alert alert-warning">
+
+                등록된 개인 평가 문항이 없습니다.
+
+              </div>
+
+
             {% endfor %}
+
+
           </div>
 
+
+
+          <!-- ====================================
+               Modal Footer
+          ===================================== -->
           <div class="modal-footer">
-            <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">취소</button>
-            <button type="submit" class="btn btn-primary">제출하기</button>
+
+
+            <button
+              type="button"
+              class="btn btn-outline-secondary"
+              data-bs-dismiss="modal"
+            >
+              취소
+            </button>
+
+
+            {% if questions %}
+
+              <button
+                type="submit"
+                class="btn btn-primary"
+              >
+                제출하기
+              </button>
+
+            {% endif %}
+
+
           </div>
+
+
         </form>
 
       </div>
-    </div>
-  </div>
-
-  <!-- =========================================
-       평가 완료 모달
-  ========================================== -->
-
-  <div class="modal fade" id="completeModal" tabindex="-1">
-
-    <div class="modal-dialog modal-dialog-centered">
-
-      <div class="modal-content">
-
-        <div class="modal-body text-center p-5">
-
-          <div class="mb-3">
-
-            <span class="badge rounded-pill text-bg-success fs-3">
-              ✓
-            </span>
-
-          </div>
-
-          <h4 class="fw-bold mb-3">
-            평가가 완료되었습니다.
-          </h4>
-
-          <p class="text-muted mb-4">
-            제출한 평가는 다시 수정할 수 없습니다.
-          </p>
-
-          <button type="button" class="btn btn-primary px-5" data-bs-dismiss="modal">
-            확인
-          </button>
-
-        </div>
-
-      </div>
 
     </div>
 
   </div>
 
 
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
 
-
-  <!-- 목업용 학생 정보 변경 및 완료 모달 제어 스크립트 -->
-  <script>
-    function selectStudent(name, email, slack) {
-      document.getElementById("selectedStudentName").textContent = name;
-      document.getElementById("studentNameDetail").textContent = name;
-      document.getElementById("studentEmailDetail").textContent = email;
-      document.getElementById("studentSlackDetail").textContent = slack;
-    }
-
-    // [제출하기] 버튼을 누를 때 완료 모달을 띄우는 로직
-    document.addEventListener("DOMContentLoaded", function() {
-      // 폼 안의 제출하기 버튼을 가로챔 (버튼 type을 button으로 바꿨거나 form submit 제어)
-      const submitButtons = document.querySelectorAll('button[type="submit"]');
-      
-      submitButtons.forEach(button => {
-        button.addEventListener('click', function(e) {
-          const form = button.closest('form');
-          if (!form) return;
-
-          // 필수 항목들이 체크되었는지 확인
-          if (!form.checkValidity()) {
-            form.reportValidity();
-            return;
-          }
-
-          // 기본 제출 동작을 막고
-          e.preventDefault();
-
-          // 1. 입력 모달 닫기
-          const evalModalEl = document.getElementById('individualEvaluationModal');
-          const evalModal = bootstrap.Modal.getInstance(evalModalEl) || new bootstrap.Modal(evalModalEl);
-          evalModal.hide();
-
-          // 2. 완료 모달 띄우기
-          const completeModalEl = document.getElementById('completeModal');
-          const completeModal = new bootstrap.Modal(completeModalEl);
-          completeModal.show();
-
-          // 3. 완료 모달 안의 [확인] 버튼을 누르면 진짜로 제출되도록 처리
-          const confirmBtn = completeModalEl.querySelector('.btn-primary');
-          confirmBtn.onclick = function() {
-            form.submit();
-          };
-        });
-      });
-    });
+  <!-- Bootstrap JS -->
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+  >
   </script>
+
+
+
+  <!-- ==========================================
+       평가 대상 학생 선택
+  =========================================== -->
+  <script>
+
+    document.addEventListener(
+      "DOMContentLoaded",
+      function () {
+
+        const modalElement =
+          document.getElementById(
+            "individualEvaluationModal"
+          );
+
+
+        const targetStudentId =
+          document.getElementById(
+            "targetStudentId"
+          );
+
+
+        const selectedStudentName =
+          document.getElementById(
+            "selectedStudentName"
+          );
+
+
+        const studentNameDetail =
+          document.getElementById(
+            "studentNameDetail"
+          );
+
+
+        const studentEmailDetail =
+          document.getElementById(
+            "studentEmailDetail"
+          );
+
+
+        const studentSlackDetail =
+          document.getElementById(
+            "studentSlackDetail"
+          );
+
+
+        const form =
+          document.getElementById(
+            "individualEvaluationForm"
+          );
+
+
+        // ======================================
+        // 모달 열리기 직전
+        // ======================================
+        modalElement.addEventListener(
+          "show.bs.modal",
+          function (event) {
+
+            const button =
+              event.relatedTarget;
+
+
+            if (!button) {
+              return;
+            }
+
+
+            // 실제 학생 데이터
+            const studentId =
+              button.getAttribute(
+                "data-student-id"
+              );
+
+
+            const studentName =
+              button.getAttribute(
+                "data-student-name"
+              );
+
+
+            const studentEmail =
+              button.getAttribute(
+                "data-student-email"
+              );
+
+
+            const studentSlack =
+              button.getAttribute(
+                "data-student-slack"
+              );
+
+
+            // 서버로 전송할 ID
+            targetStudentId.value =
+              studentId;
+
+
+            // 모달 화면 표시
+            selectedStudentName.textContent =
+              studentName;
+
+
+            studentNameDetail.textContent =
+              studentName;
+
+
+            studentEmailDetail.textContent =
+              studentEmail;
+
+
+            studentSlackDetail.textContent =
+              studentSlack;
+
+
+            // ==================================
+            // 이전 학생 평가 점수 초기화
+            // ==================================
+            const radios =
+              form.querySelectorAll(
+                'input[type="radio"]'
+              );
+
+
+            radios.forEach(
+              function (radio) {
+
+                radio.checked = false;
+
+              }
+            );
+
+          }
+        );
+
+      }
+    );
+
+  </script>
+
+
+</body>
+
+</html>
