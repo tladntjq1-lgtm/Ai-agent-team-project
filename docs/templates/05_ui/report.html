@@ -1,0 +1,671 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!--
+  UI ID: UI-07
+  화면명: 리포트
+
+  주요 기능
+  - 공개된 결과 없음 화면
+  - 종료된 프로젝트 결과 조회
+  - 팀 평가 점수 조회
+  - 개인 평가 점수 조회
+  - 선생님 평가 점수 조회
+  - 최종 점수 조회
+  - 개인 석차 조회
+  - 팀 석차 조회
+  - 전체 프로젝트 기록 조회
+  -->
+
+  <title>참교육 | 리포트</title>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+</head>
+
+<body class="bg-light">
+
+  <!-- 상단 네비게이션 -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+
+    <div class="container">
+
+      <a
+        class="navbar-brand fw-bold"
+        href="student_home.html"
+      >
+        참교육
+      </a>
+
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#studentNavbar"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div
+        class="collapse navbar-collapse"
+        id="studentNavbar"
+      >
+
+        <ul class="navbar-nav ms-auto">
+
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="student_home.html"
+            >
+              홈
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="my_team.html"
+            >
+              내 팀
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="team_eval_list.html"
+            >
+              팀 평가
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="individual_eval.html"
+            >
+              개인 평가
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a
+              class="nav-link active"
+              href="report.html"
+            >
+              리포트
+            </a>
+          </li>
+
+        </ul>
+
+      </div>
+
+    </div>
+
+  </nav>
+
+
+  <main class="container py-5">
+
+    <!-- 제목 -->
+    <div class="mb-4">
+
+      <h1 class="h3 fw-bold mb-1">
+        평가 리포트
+      </h1>
+
+      <p class="text-muted mb-0">
+        종료된 프로젝트의 평가 결과를 확인하세요.
+      </p>
+
+    </div>
+
+
+    <!-- ======================================
+         CASE 1. 공개된 결과가 없는 경우
+    ======================================= -->
+
+    <section id="noResult" class="mb-5">
+
+      <div class="card border-0 shadow-sm">
+
+        <div class="card-body text-center py-5">
+
+          <span class="badge text-bg-secondary fs-5 mb-3">
+            결과 없음
+          </span>
+
+          <h3 class="fw-bold mb-3">
+            아직 공개된 평가 결과가 없습니다.
+          </h3>
+
+          <p class="text-muted mb-0">
+            평가가 종료되고 관리자가 결과를 공개하면
+            점수와 석차를 확인할 수 있습니다.
+          </p>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ======================================
+         CASE 2. 공개된 결과가 있는 경우
+         실제 구현 시 둘 중 하나만 출력
+    ======================================= -->
+
+    <section id="resultExists">
+
+      <!-- 프로젝트 선택 -->
+      <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body p-4">
+
+          <div class="row g-3 align-items-end">
+
+            <div class="col-md-8">
+
+              <label class="form-label fw-semibold">
+                평가 종료된 프로젝트
+              </label>
+
+              <select class="form-select">
+
+                <option selected>
+                  2차 프로젝트 - 참교육 학생 평가 시스템
+                </option>
+
+                <option>
+                  1차 프로젝트 - 데이터 분석 프로젝트
+                </option>
+
+              </select>
+
+            </div>
+
+
+            <div class="col-md-4 text-md-end">
+
+              <span class="badge text-bg-secondary">
+                평가 종료
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- 점수 요약 -->
+      <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body p-4">
+
+          <h5 class="fw-bold mb-4">
+            내 평가 결과
+          </h5>
+
+
+          <div class="row g-3">
+
+            <!-- 팀 평가 -->
+            <div class="col-md-4">
+
+              <div class="border rounded-3 p-4 h-100">
+
+                <p class="text-muted small mb-1">
+                  학생 팀 평가
+                </p>
+
+                <h2 class="fw-bold mb-2">
+                  88점
+                </h2>
+
+                <span class="badge text-bg-primary">
+                  30%
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <!-- 개인 평가 -->
+            <div class="col-md-4">
+
+              <div class="border rounded-3 p-4 h-100">
+
+                <p class="text-muted small mb-1">
+                  개인 평가
+                </p>
+
+                <h2 class="fw-bold mb-2">
+                  92점
+                </h2>
+
+                <span class="badge text-bg-primary">
+                  30%
+                </span>
+
+              </div>
+
+            </div>
+
+
+            <!-- 선생님 평가 -->
+            <div class="col-md-4">
+
+              <div class="border rounded-3 p-4 h-100">
+
+                <p class="text-muted small mb-1">
+                  선생님 평가
+                </p>
+
+                <h2 class="fw-bold mb-2">
+                  95점
+                </h2>
+
+                <span class="badge text-bg-primary">
+                  40%
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <!-- 최종 점수 -->
+          <div class="alert alert-primary mt-4 mb-0">
+
+            <div class="row align-items-center g-3">
+
+              <div class="col-md-8">
+
+                <p class="mb-1">
+                  최종 개인 점수
+                </p>
+
+                <h2 class="fw-bold mb-2">
+                  92.0점
+                </h2>
+
+                <p class="small mb-0">
+                  팀 평가 30% + 개인 평가 30% + 선생님 평가 40%
+                </p>
+
+              </div>
+
+
+              <div class="col-md-4 text-md-end">
+
+                <span class="badge text-bg-primary fs-6">
+                  개인 3위
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- 개인 / 팀 결과 -->
+      <div class="row g-4 mb-4">
+
+
+        <!-- 개인 석차 -->
+        <div class="col-lg-4">
+
+          <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body p-4">
+
+              <p class="text-muted small mb-1">
+                개인 석차
+              </p>
+
+              <h2 class="fw-bold text-primary">
+                3위
+              </h2>
+
+              <p class="text-muted mb-0">
+                전체 20명 중
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- 소속 팀 -->
+        <div class="col-lg-4">
+
+          <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body p-4">
+
+              <p class="text-muted small mb-1">
+                소속 팀
+              </p>
+
+              <h2 class="fw-bold">
+                3팀
+              </h2>
+
+              <p class="text-muted mb-0">
+                참교육 프로젝트
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- 팀 석차 -->
+        <div class="col-lg-4">
+
+          <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body p-4">
+
+              <p class="text-muted small mb-1">
+                팀 결과
+              </p>
+
+              <h2 class="fw-bold text-success">
+                2위
+              </h2>
+
+              <p class="text-muted mb-0">
+                팀 점수 91.3점
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- 평가 기록 변화 -->
+      <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body p-4">
+
+          <div class="mb-4">
+
+            <h5 class="fw-bold mb-1">
+              평가 기록 변화
+            </h5>
+
+            <p class="text-muted small mb-0">
+              프로젝트별 최종 개인 점수 변화입니다.
+            </p>
+
+          </div>
+
+
+          <!--
+          Bootstrap-only 조건으로 별도 차트 CSS/라이브러리를 사용하지 않고
+          Progress 컴포넌트로 점수 변화 표현
+          -->
+
+          <div class="mb-4">
+
+            <div
+              class="d-flex justify-content-between align-items-center mb-2"
+            >
+
+              <span class="fw-semibold">
+                1차 프로젝트
+              </span>
+
+              <span class="badge text-bg-secondary">
+                85점
+              </span>
+
+            </div>
+
+            <div class="progress">
+
+              <div
+                class="progress-bar w-75"
+                role="progressbar"
+              >
+                85점
+              </div>
+
+            </div>
+
+          </div>
+
+
+          <div>
+
+            <div
+              class="d-flex justify-content-between align-items-center mb-2"
+            >
+
+              <span class="fw-semibold">
+                2차 프로젝트
+              </span>
+
+              <span class="badge text-bg-primary">
+                92점
+              </span>
+
+            </div>
+
+            <div class="progress">
+
+              <div
+                class="progress-bar w-100"
+                role="progressbar"
+              >
+                92점
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- 전체 프로젝트 -->
+      <div class="card border-0 shadow-sm">
+
+        <div class="card-body p-4">
+
+          <div class="d-flex justify-content-between align-items-center mb-4">
+
+            <div>
+
+              <h5 class="fw-bold mb-1">
+                전체 프로젝트 조회
+              </h5>
+
+              <p class="text-muted small mb-0">
+                종료된 프로젝트의 평가 기록입니다.
+              </p>
+
+            </div>
+
+            <span class="badge text-bg-secondary">
+              총 2개
+            </span>
+
+          </div>
+
+
+          <div class="table-responsive">
+
+            <table class="table table-hover align-middle">
+
+              <thead class="table-light">
+
+                <tr>
+
+                  <th>
+                    프로젝트
+                  </th>
+
+                  <th>
+                    팀
+                  </th>
+
+                  <th>
+                    팀 평가
+                  </th>
+
+                  <th>
+                    개인 평가
+                  </th>
+
+                  <th>
+                    선생님 평가
+                  </th>
+
+                  <th>
+                    최종 점수
+                  </th>
+
+                  <th>
+                    개인 석차
+                  </th>
+
+                  <th>
+                    팀 석차
+                  </th>
+
+                </tr>
+
+              </thead>
+
+
+              <tbody>
+
+                <tr>
+
+                  <td class="fw-semibold">
+                    2차 참교육 프로젝트
+                  </td>
+
+                  <td>
+                    3팀
+                  </td>
+
+                  <td>
+                    88
+                  </td>
+
+                  <td>
+                    92
+                  </td>
+
+                  <td>
+                    95
+                  </td>
+
+                  <td class="fw-bold text-primary">
+                    92.0
+                  </td>
+
+                  <td>
+                    <span class="badge text-bg-primary">
+                      3위
+                    </span>
+                  </td>
+
+                  <td>
+                    <span class="badge text-bg-success">
+                      2위
+                    </span>
+                  </td>
+
+                </tr>
+
+
+                <tr>
+
+                  <td class="fw-semibold">
+                    1차 데이터 분석 프로젝트
+                  </td>
+
+                  <td>
+                    1팀
+                  </td>
+
+                  <td>
+                    82
+                  </td>
+
+                  <td>
+                    85
+                  </td>
+
+                  <td>
+                    88
+                  </td>
+
+                  <td class="fw-bold">
+                    85.3
+                  </td>
+
+                  <td>
+                    6위
+                  </td>
+
+                  <td>
+                    3위
+                  </td>
+
+                </tr>
+
+              </tbody>
+
+            </table>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+  ></script>
+
+</body>
+</html>

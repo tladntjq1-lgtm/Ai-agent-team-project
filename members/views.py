@@ -4,25 +4,44 @@ from .models import Member
 from .forms import MemberForm
 
 
-# 1. 회원 목록
+# ==========================================
+# 1. 학생 홈 화면
+# ==========================================
+def student_home(request):
+    return render(
+        request,
+        'student_home.html'
+    )
+
+
+# ==========================================
+# 2. 회원 목록
+# ==========================================
 def member_list(request):
     members = Member.objects.all()
 
     return render(
         request,
         'members/member_list.html',
-        {'members': members}
+        {
+            'members': members
+        }
     )
 
 
-# 2. 회원 등록
+# ==========================================
+# 3. 회원 등록
+# ==========================================
 def member_create(request):
     if request.method == "POST":
         form = MemberForm(request.POST)
 
         if form.is_valid():
             form.save()
-            return redirect('member_list')
+
+            return redirect(
+                'member_list'
+            )
 
     else:
         form = MemberForm()
@@ -30,11 +49,15 @@ def member_create(request):
     return render(
         request,
         'members/member_create.html',
-        {'form': form}
+        {
+            'form': form
+        }
     )
 
 
-# 3. 회원 수정
+# ==========================================
+# 4. 회원 수정
+# ==========================================
 def member_update(request, member_id):
     member = get_object_or_404(
         Member,
@@ -49,7 +72,10 @@ def member_update(request, member_id):
 
         if form.is_valid():
             form.save()
-            return redirect('member_list')
+
+            return redirect(
+                'member_list'
+            )
 
     else:
         form = MemberForm(
@@ -66,11 +92,28 @@ def member_update(request, member_id):
     )
 
 
-# 4. 회원 삭제
+# ==========================================
+# 5. 회원 삭제
+# ==========================================
 def member_delete(request, member_id):
-    member = get_object_or_404(Member, pk=member_id)
+    member = get_object_or_404(
+        Member,
+        pk=member_id
+    )
 
     if request.method == "POST":
         member.delete()
 
-    return redirect('member_list')
+    return redirect(
+        'member_list'
+    )
+
+
+# ==========================================
+# 6. 로그인 화면
+# ==========================================
+def login_page(request):
+    return render(
+        request,
+        'login.html'
+    )
