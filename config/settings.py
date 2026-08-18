@@ -45,7 +45,9 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'django_extensions',
-    "members"
+    "members",
+    'teams',
+    'evaluations',
 ]
 
 MIDDLEWARE = [
