@@ -33,7 +33,7 @@
 
       <a
         class="navbar-brand fw-bold"
-        href="admin_dashboard.html"
+        href="{% url 'admin_dashboard' %}"
       >
         참교육 ADMIN
       </a>
@@ -57,7 +57,7 @@
           <li class="nav-item">
             <a
               class="nav-link"
-              href="admin_dashboard.html"
+              href="{% url 'admin_dashboard' %}"
             >
               대시보드
             </a>
@@ -66,7 +66,7 @@
           <li class="nav-item">
             <a
               class="nav-link"
-              href="admin_evaluation_round.html"
+              href="{% url 'admin_evaluation_round' %}"
             >
               평가 관리
             </a>
@@ -75,7 +75,7 @@
           <li class="nav-item">
             <a
               class="nav-link"
-              href="admin_team_management.html"
+              href="{% url 'admin_team_management' %}"
             >
               팀 관리
             </a>
@@ -84,7 +84,7 @@
           <li class="nav-item">
             <a
               class="nav-link active"
-              href="admin_student_management.html"
+              href="{% url 'admin_student_management' %}"
             >
               학생 관리
             </a>

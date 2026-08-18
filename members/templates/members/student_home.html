@@ -34,7 +34,7 @@
 
       <a
         class="navbar-brand fw-bold"
-        href="student_home.html"
+        href="{% url 'student_home' %}"
       >
         참교육
       </a>
@@ -58,7 +58,7 @@
           <li class="nav-item">
             <a
               class="nav-link active"
-              href="student_home.html"
+              href="{% url 'student_home' %}"
             >
               홈
             </a>
@@ -67,7 +67,7 @@
           <li class="nav-item">
             <a
               class="nav-link"
-              href="my_team.html"
+              href="{% url 'my_team' %}"
             >
               내 팀
             </a>
@@ -76,7 +76,7 @@
           <li class="nav-item">
             <a
               class="nav-link"
-              href="team_eval_list.html"
+              href="{% url 'team_eval_list' %}"
             >
               팀 평가
             </a>
@@ -85,7 +85,7 @@
           <li class="nav-item">
             <a
               class="nav-link"
-              href="individual_eval.html"
+              href="{% url 'individual_eval' %}"
             >
               개인 평가
             </a>
@@ -94,7 +94,7 @@
           <li class="nav-item">
             <a
               class="nav-link"
-              href="report.html"
+              href="{% url 'report' %}"
             >
               리포트
             </a>
@@ -346,7 +346,7 @@
             </div>
 
             <a
-              href="my_team.html"
+              href="{% url 'my_team' %}"
               class="btn btn-outline-primary btn-sm"
             >
               내 팀 자세히 보기
@@ -443,7 +443,7 @@
           <div class="d-grid">
 
             <a
-              href="team_eval_list.html"
+              href="{% url 'team_eval_list' %}"
               class="btn btn-primary btn-lg"
             >
               팀 평가하러 가기
@@ -459,7 +459,7 @@
           <div class="d-grid">
 
             <a
-              href="individual_eval.html"
+              href="{% url 'individual_eval' %}"
               class="btn btn-outline-primary btn-lg"
             >
               개인 평가하러 가기
@@ -507,7 +507,7 @@
           </p>
 
           <a
-            href="report.html"
+            href="{% url 'report' %}"
             class="btn btn-outline-primary"
           >
             지난 평가 결과 보기
