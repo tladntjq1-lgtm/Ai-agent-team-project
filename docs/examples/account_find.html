@@ -1,0 +1,379 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!--
+  UI ID: UI-02
+  화면명: 아이디 / 비밀번호 찾기
+  -->
+
+  <title>참교육 | 계정 찾기</title>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+</head>
+
+<body class="bg-light">
+
+  <main
+    class="container min-vh-100 d-flex justify-content-center align-items-center py-5"
+  >
+
+    <div class="row justify-content-center w-100">
+
+      <div class="col-12 col-sm-10 col-md-8 col-lg-6 col-xl-5">
+
+        <div class="card border-0 shadow-sm rounded-4">
+
+          <div class="card-body p-4 p-md-5">
+
+            <!-- 제목 -->
+            <div class="text-center mb-4">
+
+              <h1 class="fw-bold mb-2">
+                참교육
+              </h1>
+
+              <p class="text-muted mb-0">
+                계정 정보를 찾아보세요.
+              </p>
+
+            </div>
+
+
+            <!-- 탭 -->
+            <ul
+              class="nav nav-tabs nav-fill mb-4"
+              id="accountTab"
+              role="tablist"
+            >
+
+              <li class="nav-item" role="presentation">
+
+                <button
+                  class="nav-link active fw-semibold"
+                  id="find-id-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#find-id"
+                  type="button"
+                  role="tab"
+                >
+                  아이디 찾기
+                </button>
+
+              </li>
+
+              <li class="nav-item" role="presentation">
+
+                <button
+                  class="nav-link fw-semibold"
+                  id="find-password-tab"
+                  data-bs-toggle="tab"
+                  data-bs-target="#find-password"
+                  type="button"
+                  role="tab"
+                >
+                  비밀번호 찾기
+                </button>
+
+              </li>
+
+            </ul>
+
+
+            <div class="tab-content">
+
+
+              <!-- 아이디 찾기 -->
+              <div
+                class="tab-pane fade show active"
+                id="find-id"
+                role="tabpanel"
+              >
+
+                <div class="alert alert-light border">
+                  등록된 이름과 이메일을 입력해주세요.
+                </div>
+
+                <form>
+
+                  <div class="mb-3">
+
+                    <label
+                      for="findIdName"
+                      class="form-label fw-semibold"
+                    >
+                      이름
+                    </label>
+
+                    <input
+                      type="text"
+                      class="form-control form-control-lg"
+                      id="findIdName"
+                      placeholder="이름을 입력하세요"
+                    >
+
+                  </div>
+
+
+                  <div class="mb-4">
+
+                    <label
+                      for="findIdEmail"
+                      class="form-label fw-semibold"
+                    >
+                      이메일
+                    </label>
+
+                    <input
+                      type="email"
+                      class="form-control form-control-lg"
+                      id="findIdEmail"
+                      placeholder="example@email.com"
+                    >
+
+                  </div>
+
+
+                  <div class="d-grid">
+
+                    <button
+                      type="button"
+                      class="btn btn-primary btn-lg"
+                      data-bs-toggle="modal"
+                      data-bs-target="#idResultModal"
+                    >
+                      아이디 찾기
+                    </button>
+
+                  </div>
+
+                </form>
+
+              </div>
+
+
+              <!-- 비밀번호 찾기 -->
+              <div
+                class="tab-pane fade"
+                id="find-password"
+                role="tabpanel"
+              >
+
+                <div class="alert alert-light border">
+                  아이디와 등록된 이메일을 입력해주세요.
+                </div>
+
+                <form>
+
+                  <div class="mb-3">
+
+                    <label
+                      for="findPasswordId"
+                      class="form-label fw-semibold"
+                    >
+                      아이디
+                    </label>
+
+                    <input
+                      type="text"
+                      class="form-control form-control-lg"
+                      id="findPasswordId"
+                      placeholder="아이디를 입력하세요"
+                    >
+
+                  </div>
+
+
+                  <div class="mb-4">
+
+                    <label
+                      for="findPasswordEmail"
+                      class="form-label fw-semibold"
+                    >
+                      이메일
+                    </label>
+
+                    <input
+                      type="email"
+                      class="form-control form-control-lg"
+                      id="findPasswordEmail"
+                      placeholder="example@email.com"
+                    >
+
+                  </div>
+
+
+                  <div class="d-grid">
+
+                    <button
+                      type="button"
+                      class="btn btn-primary btn-lg"
+                      data-bs-toggle="modal"
+                      data-bs-target="#passwordResultModal"
+                    >
+                      비밀번호 찾기
+                    </button>
+
+                  </div>
+
+                </form>
+
+              </div>
+
+            </div>
+
+
+            <!-- 로그인 화면으로 이동 -->
+            <div class="text-center mt-4">
+
+              <a
+                href="login.html"
+                class="link-secondary text-decoration-none"
+              >
+                ← 로그인으로 돌아가기
+              </a>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </main>
+
+
+  <!-- 아이디 찾기 결과 모달 -->
+  <div
+    class="modal fade"
+    id="idResultModal"
+    tabindex="-1"
+  >
+
+    <div class="modal-dialog modal-dialog-centered">
+
+      <div class="modal-content border-0 shadow">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title fw-bold">
+            아이디 찾기
+          </h5>
+
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+          ></button>
+
+        </div>
+
+
+        <div class="modal-body text-center p-5">
+
+          <p class="text-muted mb-2">
+            회원님의 아이디는
+          </p>
+
+          <h3 class="fw-bold text-primary mb-2">
+            student01
+          </h3>
+
+          <p class="text-muted mb-0">
+            입니다.
+          </p>
+
+        </div>
+
+
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn btn-primary w-100"
+            data-bs-dismiss="modal"
+          >
+            확인
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <!-- 비밀번호 찾기 결과 모달 -->
+  <div
+    class="modal fade"
+    id="passwordResultModal"
+    tabindex="-1"
+  >
+
+    <div class="modal-dialog modal-dialog-centered">
+
+      <div class="modal-content border-0 shadow">
+
+        <div class="modal-header">
+
+          <h5 class="modal-title fw-bold">
+            비밀번호 찾기
+          </h5>
+
+          <button
+            type="button"
+            class="btn-close"
+            data-bs-dismiss="modal"
+          ></button>
+
+        </div>
+
+
+        <div class="modal-body text-center p-5">
+
+          <h5 class="fw-bold mb-3">
+            비밀번호 재설정 안내를 전송했습니다.
+          </h5>
+
+          <p class="text-muted mb-0">
+            등록된 이메일을 확인해주세요.
+          </p>
+
+        </div>
+
+
+        <div class="modal-footer">
+
+          <button
+            type="button"
+            class="btn btn-primary w-100"
+            data-bs-dismiss="modal"
+          >
+            확인
+          </button>
+
+        </div>
+
+      </div>
+
+    </div>
+
+  </div>
+
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+  ></script>
+
+</body>
+</html>
