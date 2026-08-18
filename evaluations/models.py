@@ -108,7 +108,7 @@ class EvaluationQuestion(models.Model):
 
 
 # ==========================================
-# 4. 팀 평가 점수
+# 4. 학생 팀 평가
 # ==========================================
 class TeamEvaluationScore(models.Model):
 
@@ -137,7 +137,7 @@ class TeamEvaluationScore(models.Model):
 
 
 # ==========================================
-# 5. 개인 평가 점수
+# 5. 학생 개인 평가
 # ==========================================
 class IndividualEvaluationScore(models.Model):
 
@@ -163,3 +163,61 @@ class IndividualEvaluationScore(models.Model):
     class Meta:
         managed = False
         db_table = '"cham_edu"."individual_evaluation_scores"'
+
+
+# ==========================================
+# 6. 선생님 팀 평가
+# ==========================================
+class TeacherTeamScore(models.Model):
+
+    score_id = models.AutoField(
+        primary_key=True
+    )
+
+    round_id = models.IntegerField()
+
+    teacher_id = models.IntegerField()
+
+    target_team_id = models.IntegerField()
+
+    question_id = models.IntegerField()
+
+    score = models.IntegerField()
+
+    created_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        managed = False
+        db_table = '"cham_edu"."teacher_team_scores"'
+
+
+# ==========================================
+# 7. 선생님 개인 평가
+# ==========================================
+class TeacherIndividualScore(models.Model):
+
+    score_id = models.AutoField(
+        primary_key=True
+    )
+
+    round_id = models.IntegerField()
+
+    teacher_id = models.IntegerField()
+
+    target_student_id = models.IntegerField()
+
+    question_id = models.IntegerField()
+
+    score = models.IntegerField()
+
+    created_at = models.DateTimeField(
+        null=True,
+        blank=True
+    )
+
+    class Meta:
+        managed = False
+        db_table = '"cham_edu"."teacher_individual_scores"'

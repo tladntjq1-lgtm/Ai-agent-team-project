@@ -1,20 +1,9 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  <!--
-  UI ID: UI-08
-  화면명: 관리자 대시보드
-
-  주요 기능
-  - 현재 프로젝트 확인
-  - 평가 상태 확인
-  - 학생 / 팀 현황
-  - 평가 진행률 확인
-  - 관리자 메뉴 이동
-  -->
 
   <title>참교육 | 관리자 대시보드</title>
 
@@ -24,9 +13,13 @@
   >
 </head>
 
+
 <body class="bg-light">
 
-  <!-- 상단 네비게이션 -->
+
+  <!-- ==========================================
+       상단 네비게이션
+  =========================================== -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
     <div class="container">
@@ -38,6 +31,7 @@
         참교육 ADMIN
       </a>
 
+
       <button
         class="navbar-toggler"
         type="button"
@@ -46,6 +40,7 @@
       >
         <span class="navbar-toggler-icon"></span>
       </button>
+
 
       <div
         class="collapse navbar-collapse"
@@ -63,6 +58,7 @@
             </a>
           </li>
 
+
           <li class="nav-item">
             <a
               class="nav-link"
@@ -71,6 +67,7 @@
               평가 관리
             </a>
           </li>
+
 
           <li class="nav-item">
             <a
@@ -81,6 +78,7 @@
             </a>
           </li>
 
+
           <li class="nav-item">
             <a
               class="nav-link"
@@ -89,6 +87,7 @@
               학생 관리
             </a>
           </li>
+
 
           <li class="nav-item">
             <a
@@ -99,12 +98,23 @@
             </a>
           </li>
 
+
           <li class="nav-item">
             <a
               class="nav-link"
               href="{% url 'admin_result_management' %}"
             >
               결과 관리
+            </a>
+          </li>
+
+
+          <li class="nav-item ms-lg-3">
+            <a
+              class="btn btn-outline-light btn-sm"
+              href="{% url 'logout' %}"
+            >
+              로그아웃
             </a>
           </li>
 
@@ -117,10 +127,24 @@
   </nav>
 
 
+
+  <!-- ==========================================
+       메인
+  =========================================== -->
   <main class="container py-5">
 
-    <!-- 제목 -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+
+    <!-- ========================================
+         제목
+    ========================================= -->
+    <div
+      class="
+        d-flex
+        justify-content-between
+        align-items-center
+        mb-4
+      "
+    >
 
       <div>
 
@@ -134,66 +158,161 @@
 
       </div>
 
+
       <span class="badge text-bg-primary fs-6">
-        관리자
+
+        {% if user_name %}
+          {{ user_name }}
+        {% else %}
+          관리자
+        {% endif %}
+
       </span>
 
     </div>
 
 
-    <!-- 현재 프로젝트 -->
+
+    <!-- ========================================
+         현재 프로젝트
+    ========================================= -->
     <div class="card border-0 shadow-sm mb-4">
 
       <div class="card-body p-4">
 
-        <div class="row g-4 align-items-center">
 
-          <div class="col-lg-8">
+        {% if current_project %}
 
-            <p class="text-muted small mb-1">
-              현재 진행 중인 프로젝트
-            </p>
 
-            <h4 class="fw-bold mb-2">
-              참교육 학생 평가 시스템 프로젝트
-            </h4>
+          <div class="row g-4 align-items-center">
 
-            <div class="d-flex flex-wrap gap-2">
 
-              <span class="badge text-bg-success">
-                IN_PROGRESS
-              </span>
+            <div class="col-lg-8">
 
-              <span class="badge text-bg-secondary">
-                2차 평가
-              </span>
+              <p class="text-muted small mb-1">
+                현재 진행 중인 프로젝트
+              </p>
+
+
+              <h4 class="fw-bold mb-2">
+                {{ current_project.project_name }}
+              </h4>
+
+
+              <div class="d-flex flex-wrap gap-2">
+
+
+                <!-- 프로젝트 상태 -->
+                {% if current_project.status == 'IN_PROGRESS' %}
+
+                  <span class="badge text-bg-success">
+                    IN_PROGRESS
+                  </span>
+
+                {% elif current_project.status == 'READY' %}
+
+                  <span class="badge text-bg-warning">
+                    READY
+                  </span>
+
+                {% elif current_project.status == 'COMPLETED' %}
+
+                  <span class="badge text-bg-secondary">
+                    COMPLETED
+                  </span>
+
+                {% else %}
+
+                  <span class="badge text-bg-secondary">
+                    {{ current_project.status|default:"상태 없음" }}
+                  </span>
+
+                {% endif %}
+
+
+                <!-- 평가 회차 -->
+                {% if current_round %}
+
+                  <span class="badge text-bg-secondary">
+                    {{ current_round.round_name }}
+                  </span>
+
+                {% else %}
+
+                  <span class="badge text-bg-light text-dark">
+                    평가 회차 없음
+                  </span>
+
+                {% endif %}
+
+
+              </div>
 
             </div>
+
+
+
+            <div class="col-lg-4 text-lg-end">
+
+              <p class="text-muted small mb-1">
+                평가 기간
+              </p>
+
+
+              <div class="fw-semibold">
+
+                {% if current_round %}
+
+                  {{ current_round.start_date|date:"Y.m.d" }}
+
+                  ~
+
+                  {{ current_round.end_date|date:"Y.m.d" }}
+
+                {% else %}
+
+                  -
+
+                {% endif %}
+
+              </div>
+
+            </div>
+
 
           </div>
 
 
-          <div class="col-lg-4 text-lg-end">
+        {% else %}
 
-            <p class="text-muted small mb-1">
-              평가 기간
+
+          <div class="text-center py-4">
+
+            <h5 class="fw-bold mb-2">
+              현재 프로젝트가 없습니다.
+            </h5>
+
+            <p class="text-muted mb-0">
+              프로젝트를 생성한 후 팀 편성과 평가를 진행해주세요.
             </p>
-
-            <div class="fw-semibold">
-              2026.08.18 ~ 2026.08.22
-            </div>
 
           </div>
 
-        </div>
+
+        {% endif %}
+
 
       </div>
 
     </div>
 
 
-    <!-- 요약 -->
+
+    <!-- ========================================
+         요약
+    ========================================= -->
     <div class="row g-3 mb-4">
+
 
       <!-- 전체 학생 -->
       <div class="col-md-6 col-xl-3">
@@ -206,9 +325,11 @@
               전체 학생
             </p>
 
+
             <h2 class="fw-bold mb-1">
-              20명
+              {{ total_students|default:0 }}명
             </h2>
+
 
             <p class="text-muted small mb-0">
               현재 참여 학생
@@ -221,7 +342,8 @@
       </div>
 
 
-      <!-- 팀 -->
+
+      <!-- 전체 팀 -->
       <div class="col-md-6 col-xl-3">
 
         <div class="card border-0 shadow-sm h-100">
@@ -232,9 +354,11 @@
               전체 팀
             </p>
 
+
             <h2 class="fw-bold mb-1">
-              5팀
+              {{ total_teams|default:0 }}팀
             </h2>
+
 
             <p class="text-muted small mb-0">
               현재 편성 완료
@@ -245,6 +369,7 @@
         </div>
 
       </div>
+
 
 
       <!-- 팀 평가 -->
@@ -258,12 +383,22 @@
               팀 평가
             </p>
 
+
             <h2 class="fw-bold text-primary mb-1">
-              75%
+              {{ team_evaluation_progress|default:0 }}%
             </h2>
 
+
             <p class="text-muted small mb-0">
-              전체 진행률
+
+              {{ team_evaluation_completed_count|default:0 }}
+
+              /
+
+              {{ team_evaluation_target_count|default:0 }}
+
+              완료
+
             </p>
 
           </div>
@@ -271,6 +406,7 @@
         </div>
 
       </div>
+
 
 
       <!-- 개인 평가 -->
@@ -284,12 +420,22 @@
               개인 평가
             </p>
 
+
             <h2 class="fw-bold text-primary mb-1">
-              50%
+              {{ individual_evaluation_progress|default:0 }}%
             </h2>
 
+
             <p class="text-muted small mb-0">
-              전체 진행률
+
+              {{ individual_evaluation_completed_count|default:0 }}
+
+              /
+
+              {{ individual_evaluation_target_count|default:0 }}
+
+              완료
+
             </p>
 
           </div>
@@ -298,10 +444,14 @@
 
       </div>
 
+
     </div>
 
 
-    <!-- 평가 진행 현황 -->
+
+    <!-- ========================================
+         평가 진행 현황
+    ========================================= -->
     <div class="card border-0 shadow-sm mb-4">
 
       <div class="card-body p-4">
@@ -311,7 +461,10 @@
         </h5>
 
 
-        <!-- 팀 평가 -->
+
+        <!-- ==================================
+             학생 팀 평가
+        =================================== -->
         <div class="mb-4">
 
           <div class="d-flex justify-content-between mb-2">
@@ -320,24 +473,53 @@
               학생 팀 평가
             </span>
 
+
             <span class="badge text-bg-primary">
-              75%
+              {{ team_evaluation_progress|default:0 }}%
             </span>
 
           </div>
 
-          <div class="progress">
 
-            <div class="progress-bar w-75">
-              75%
+          <div
+            class="progress"
+            role="progressbar"
+            aria-valuenow="{{ team_evaluation_progress|default:0 }}"
+            aria-valuemin="0"
+            aria-valuemax="100"
+          >
+
+            <div
+              class="progress-bar"
+              style="width: {{ team_evaluation_progress|default:0 }}%;"
+            >
+
+              {{ team_evaluation_progress|default:0 }}%
+
             </div>
+
+          </div>
+
+
+          <div class="text-muted small mt-2">
+
+            {{ team_evaluation_completed_count|default:0 }}
+
+            /
+
+            {{ team_evaluation_target_count|default:0 }}
+
+            평가 완료
 
           </div>
 
         </div>
 
 
-        <!-- 개인 평가 -->
+
+        <!-- ==================================
+             개인 평가
+        =================================== -->
         <div class="mb-4">
 
           <div class="d-flex justify-content-between mb-2">
@@ -346,24 +528,53 @@
               개인 평가
             </span>
 
+
             <span class="badge text-bg-primary">
-              50%
+              {{ individual_evaluation_progress|default:0 }}%
             </span>
 
           </div>
 
-          <div class="progress">
 
-            <div class="progress-bar w-50">
-              50%
+          <div
+            class="progress"
+            role="progressbar"
+            aria-valuenow="{{ individual_evaluation_progress|default:0 }}"
+            aria-valuemin="0"
+            aria-valuemax="100"
+          >
+
+            <div
+              class="progress-bar"
+              style="width: {{ individual_evaluation_progress|default:0 }}%;"
+            >
+
+              {{ individual_evaluation_progress|default:0 }}%
+
             </div>
+
+          </div>
+
+
+          <div class="text-muted small mt-2">
+
+            {{ individual_evaluation_completed_count|default:0 }}
+
+            /
+
+            {{ individual_evaluation_target_count|default:0 }}
+
+            평가 완료
 
           </div>
 
         </div>
 
 
-        <!-- 선생님 평가 -->
+
+        <!-- ==================================
+             선생님 평가
+        =================================== -->
         <div>
 
           <div class="d-flex justify-content-between mb-2">
@@ -372,28 +583,67 @@
               선생님 평가
             </span>
 
+
             <span class="badge text-bg-warning">
-              40%
+              {{ teacher_progress|default:0 }}%
             </span>
 
           </div>
 
-          <div class="progress">
 
-            <div class="progress-bar w-50">
-              40%
+          <div
+            class="progress"
+            role="progressbar"
+            aria-valuenow="{{ teacher_progress|default:0 }}"
+            aria-valuemin="0"
+            aria-valuemax="100"
+          >
+
+            <div
+              class="progress-bar"
+              style="width: {{ teacher_progress|default:0 }}%;"
+            >
+
+              {{ teacher_progress|default:0 }}%
+
             </div>
 
           </div>
 
+
+          <div class="text-muted small mt-2">
+
+            {{ teacher_completed_count|default:0 }}
+
+            /
+
+            {{ teacher_target_count|default:0 }}
+
+            평가 완료
+
+            {% if teacher_target_count %}
+
+              <span class="ms-2">
+                (팀 {{ teacher_team_completed_count|default:0 }}건 /
+                학생 {{ teacher_student_completed_count|default:0 }}건)
+              </span>
+
+            {% endif %}
+
+          </div>
+
         </div>
+
 
       </div>
 
     </div>
 
 
-    <!-- 관리자 메뉴 -->
+
+    <!-- ========================================
+         관리자 메뉴
+    ========================================= -->
     <div class="mb-3">
 
       <h5 class="fw-bold mb-1">
@@ -407,7 +657,9 @@
     </div>
 
 
+
     <div class="row g-4">
+
 
       <!-- 평가 회차 관리 -->
       <div class="col-md-6 col-xl-4">
@@ -420,13 +672,16 @@
               평가
             </span>
 
+
             <h5 class="fw-bold">
               평가 회차 관리
             </h5>
 
+
             <p class="text-muted small">
               평가 회차를 생성하고 기간과 상태를 관리합니다.
             </p>
+
 
             <div class="d-grid">
 
@@ -446,6 +701,7 @@
       </div>
 
 
+
       <!-- 평가 문항 -->
       <div class="col-md-6 col-xl-4">
 
@@ -457,13 +713,16 @@
               문항
             </span>
 
+
             <h5 class="fw-bold">
               평가 문항 관리
             </h5>
 
+
             <p class="text-muted small">
               팀 평가와 개인 평가 문항을 관리합니다.
             </p>
+
 
             <div class="d-grid">
 
@@ -483,6 +742,7 @@
       </div>
 
 
+
       <!-- 팀 편성 -->
       <div class="col-md-6 col-xl-4">
 
@@ -494,13 +754,16 @@
               팀
             </span>
 
+
             <h5 class="fw-bold">
               팀 편성 / 팀 관리
             </h5>
 
+
             <p class="text-muted small">
               학생을 팀으로 편성하고 팀 구성을 관리합니다.
             </p>
+
 
             <div class="d-grid">
 
@@ -520,6 +783,7 @@
       </div>
 
 
+
       <!-- 학생 -->
       <div class="col-md-6 col-xl-4">
 
@@ -531,13 +795,16 @@
               학생
             </span>
 
+
             <h5 class="fw-bold">
               학생 관리
             </h5>
 
+
             <p class="text-muted small">
               학생 정보와 평가 참여 상태를 확인합니다.
             </p>
+
 
             <div class="d-grid">
 
@@ -557,6 +824,7 @@
       </div>
 
 
+
       <!-- 선생님 평가 -->
       <div class="col-md-6 col-xl-4">
 
@@ -568,13 +836,16 @@
               평가 입력
             </span>
 
+
             <h5 class="fw-bold">
               선생님 평가
             </h5>
 
+
             <p class="text-muted small">
-              프로젝트별 팀 선생님 평가 점수를 입력합니다.
+              프로젝트별 팀과 학생에 대한 선생님 평가 점수를 입력합니다.
             </p>
+
 
             <div class="d-grid">
 
@@ -594,6 +865,7 @@
       </div>
 
 
+
       <!-- 결과 관리 -->
       <div class="col-md-6 col-xl-4">
 
@@ -605,13 +877,16 @@
               결과
             </span>
 
+
             <h5 class="fw-bold">
               평가 결과 / 석차
             </h5>
 
+
             <p class="text-muted small">
               최종 점수와 석차를 계산하고 결과를 공개합니다.
             </p>
+
 
             <div class="d-grid">
 
@@ -630,14 +905,20 @@
 
       </div>
 
+
     </div>
+
 
   </main>
 
 
+
   <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-  ></script>
+  >
+  </script>
+
 
 </body>
+
 </html>

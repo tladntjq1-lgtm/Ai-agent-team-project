@@ -1,174 +1,382 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!--
-  UI ID: UI-05
-  화면명: 팀 평가
-
-  주요 기능
-  - 본인 팀 제외
-  - 평가 대상 팀 조회
-  - 팀 구성원 확인
-  - 팀 평가
-  - 중복 평가 방지
-  - 평가 완료 팀 비활성화
-  -->
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>참교육 | 팀 평가</title>
 
+
+  <!-- Bootstrap CSS -->
   <link
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
     rel="stylesheet"
   >
+
+
+  <style>
+
+    /* ==========================================
+       평가 모달 높이 / 스크롤
+    ========================================== */
+    #teamEvaluationModal .modal-dialog {
+      height: 90vh;
+      margin-top: 5vh;
+      margin-bottom: 5vh;
+    }
+
+
+    #teamEvaluationModal .modal-content {
+      height: 100%;
+      overflow: hidden;
+    }
+
+
+    #teamEvaluationForm {
+      height: 100%;
+      display: flex;
+      flex-direction: column;
+    }
+
+
+    #teamEvaluationModal .modal-header {
+      flex-shrink: 0;
+    }
+
+
+    #teamEvaluationModal .modal-body {
+      flex: 1;
+      overflow-y: auto;
+    }
+
+
+    #teamEvaluationModal .modal-footer {
+      flex-shrink: 0;
+      background: white;
+    }
+
+  </style>
+
 </head>
+
 
 <body class="bg-light">
 
-  <!-- 상단 네비게이션 -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
-    <div class="container">
+<!-- ==========================================
+     상단 네비게이션
+========================================== -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
-      <a
-        class="navbar-brand fw-bold"
-        href="{% url 'student_home' %}"
-      >
-        참교육
-      </a>
+  <div class="container">
 
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#studentNavbar"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
 
-      <div
-        class="collapse navbar-collapse"
-        id="studentNavbar"
-      >
+    <a
+      class="navbar-brand fw-bold"
+      href="{% url 'student_home' %}"
+    >
+      참교육
+    </a>
 
-        <ul class="navbar-nav ms-auto">
 
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{% url 'student_home' %}"
-            >
-              홈
-            </a>
-          </li>
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#studentNavbar"
+    >
 
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{% url 'my_team' %}"
-            >
-              내 팀
-            </a>
-          </li>
+      <span class="navbar-toggler-icon"></span>
 
-          <li class="nav-item">
-            <a
-              class="nav-link active"
-              href="{% url 'team_eval_list' %}"
-            >
-              팀 평가
-            </a>
-          </li>
+    </button>
 
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{% url 'individual_eval' %}"
-            >
-              개인 평가
-            </a>
-          </li>
 
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{% url 'report' %}"
-            >
-              리포트
-            </a>
-          </li>
+    <div
+      class="collapse navbar-collapse"
+      id="studentNavbar"
+    >
 
-        </ul>
+
+      <ul class="navbar-nav ms-auto align-items-lg-center">
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'student_home' %}"
+          >
+            홈
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'my_team' %}"
+          >
+            내 팀
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link active"
+            href="{% url 'team_eval_list' %}"
+          >
+            팀 평가
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'individual_eval' %}"
+          >
+            개인 평가
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'report' %}"
+          >
+            리포트
+          </a>
+
+        </li>
+
+
+        <li class="nav-item ms-lg-3">
+
+          <a
+            class="btn btn-outline-light btn-sm"
+            href="{% url 'logout' %}"
+          >
+            로그아웃
+          </a>
+
+        </li>
+
+
+      </ul>
+
+    </div>
+
+  </div>
+
+</nav>
+
+
+
+<!-- ==========================================
+     메인
+========================================== -->
+<main class="container py-5">
+
+
+  <!-- ========================================
+       제목
+  ========================================= -->
+  <div class="mb-4">
+
+    <h1 class="h3 fw-bold mb-1">
+      팀 평가
+    </h1>
+
+    <p class="text-muted mb-0">
+      다른 팀의 프로젝트 결과를 평가해주세요.
+    </p>
+
+  </div>
+
+
+
+  <!-- ========================================
+       Django 메시지
+
+       ★ 중복 메시지 방지
+       가장 최근 메시지 1개만 표시
+  ========================================= -->
+  {% if messages %}
+
+    {% for message in messages %}
+
+      {% if forloop.last %}
+
+        <div
+          class="
+            alert
+
+            {% if message.tags == 'success' %}
+              alert-success
+
+            {% elif message.tags == 'error' %}
+              alert-danger
+
+            {% elif message.tags == 'warning' %}
+              alert-warning
+
+            {% else %}
+              alert-info
+
+            {% endif %}
+          "
+        >
+
+          {{ message }}
+
+        </div>
+
+      {% endif %}
+
+    {% endfor %}
+
+  {% endif %}
+
+
+
+  <!-- ========================================
+       진행 중인 평가가 없는 경우
+  ========================================= -->
+  {% if not current_round %}
+
+
+    <div class="card border-0 shadow-sm">
+
+      <div class="card-body text-center py-5">
+
+
+        <h4 class="fw-bold mb-3">
+          현재 진행 중인 평가가 없습니다.
+        </h4>
+
+
+        <p class="text-muted mb-4">
+
+          관리자가 평가를 시작하면
+          팀 평가 기능을 사용할 수 있습니다.
+
+        </p>
+
+
+        <a
+          href="{% url 'student_home' %}"
+          class="btn btn-primary"
+        >
+          학생 홈으로 돌아가기
+        </a>
+
 
       </div>
 
     </div>
 
-  </nav>
 
 
-  <main class="container py-5">
-
-    <!-- 제목 -->
-    <div class="mb-4">
-
-      <h1 class="h3 fw-bold mb-1">
-        팀 평가
-      </h1>
-
-      <p class="text-muted mb-0">
-        다른 팀의 프로젝트 결과를 평가해주세요.
-      </p>
-
-    </div>
+  <!-- ========================================
+       진행 중인 평가가 있는 경우
+  ========================================= -->
+  {% else %}
 
 
-    <!-- 현재 평가 정보 -->
+    <!-- ======================================
+         현재 평가 정보
+    ======================================= -->
     <div class="card border-0 shadow-sm mb-4">
 
       <div class="card-body p-4">
 
         <div class="row g-4">
 
+
+          <!-- 현재 프로젝트 -->
           <div class="col-md-4">
 
             <p class="text-muted small mb-1">
               현재 프로젝트
             </p>
 
+
             <h5 class="fw-bold mb-0">
-              참교육 프로젝트
+
+              {% if project %}
+
+                {{ project.project_name }}
+
+              {% else %}
+
+                프로젝트 정보 없음
+
+              {% endif %}
+
             </h5>
 
           </div>
 
 
+
+          <!-- 현재 평가 회차 -->
           <div class="col-md-4">
 
             <p class="text-muted small mb-1">
               현재 평가 회차
             </p>
 
+
             <h5 class="fw-bold mb-0">
-              2차 프로젝트 평가
+
+              {{ current_round.round_name }}
+
             </h5>
 
           </div>
 
 
+
+          <!-- 내 팀 -->
           <div class="col-md-4">
 
             <p class="text-muted small mb-1">
               내 소속 팀
             </p>
 
+
             <h5 class="fw-bold mb-0">
-              3팀
+
+              {% if my_team %}
+
+                {{ my_team.team_name }}
+
+              {% else %}
+
+                팀 없음
+
+              {% endif %}
+
             </h5>
 
           </div>
+
 
         </div>
 
@@ -177,25 +385,48 @@
     </div>
 
 
-    <!-- 안내 -->
-    <div class="alert alert-primary">
 
-      본인이 소속된
-      <strong>3팀은 평가 대상에서 제외</strong>됩니다.
+    <!-- ======================================
+         안내
+    ======================================= -->
+    {% if my_team %}
 
-      이미 평가가 완료된 팀은 다시 평가할 수 없습니다.
+      <div class="alert alert-primary">
 
-    </div>
+        본인이 소속된
+
+        <strong>
+          {{ my_team.team_name }}
+        </strong>
+
+        은(는) 평가 대상에서 제외됩니다.
+
+        이미 평가가 완료된 팀은
+        다시 평가할 수 없습니다.
+
+      </div>
+
+    {% endif %}
 
 
-    <!-- 진행률 -->
+
+    <!-- ======================================
+         진행률
+    ======================================= -->
     <div class="card border-0 shadow-sm mb-4">
 
       <div class="card-body p-4">
 
+
         <div
-          class="d-flex justify-content-between align-items-center mb-3"
+          class="
+            d-flex
+            justify-content-between
+            align-items-center
+            mb-3
+          "
         >
+
 
           <div>
 
@@ -203,31 +434,60 @@
               팀 평가 진행률
             </h5>
 
+
             <p class="text-muted small mb-0">
-              총 3개 평가 대상 중 1개 팀 평가 완료
+
+              총
+
+              {{ target_team_count|default:0 }}개
+
+              평가 대상 중
+
+              {{ completed_team_count|default:0 }}개
+
+              팀 평가 완료
+
             </p>
 
           </div>
 
+
+
           <span class="badge text-bg-primary fs-6">
-            1 / 3 완료
+
+            {{ completed_team_count|default:0 }}
+
+            /
+
+            {{ target_team_count|default:0 }}
+
+            완료
+
           </span>
+
 
         </div>
 
 
-        <!-- Bootstrap width utility 사용 -->
+
         <div
           class="progress"
           role="progressbar"
-          aria-valuenow="25"
+          aria-valuenow="{{ team_progress|default:0 }}"
           aria-valuemin="0"
           aria-valuemax="100"
         >
 
-          <div class="progress-bar w-25">
-            25%
+
+          <div
+            class="progress-bar"
+            style="width: {{ team_progress|default:0 }}%;"
+          >
+
+            {{ team_progress|default:0 }}%
+
           </div>
+
 
         </div>
 
@@ -236,8 +496,19 @@
     </div>
 
 
-    <!-- 평가 대상 -->
-    <div class="d-flex justify-content-between align-items-center mb-3">
+
+    <!-- ======================================
+         평가 대상 제목
+    ======================================= -->
+    <div
+      class="
+        d-flex
+        justify-content-between
+        align-items-center
+        mb-3
+      "
+    >
+
 
       <div>
 
@@ -251,509 +522,599 @@
 
       </div>
 
+
       <span class="badge text-bg-secondary">
         내 팀 제외
       </span>
 
+
     </div>
 
 
+
+    <!-- ======================================
+         평가 대상 팀 목록
+    ======================================= -->
     <div class="row g-4">
 
-      <!-- 1팀 -->
-      <div class="col-md-6 col-xl-4">
 
-        <div class="card border-0 shadow-sm h-100">
-
-          <div class="card-body p-4">
-
-            <div
-              class="d-flex justify-content-between align-items-start mb-3"
-            >
-
-              <div>
-
-                <h4 class="fw-bold mb-1">
-                  1팀
-                </h4>
-
-                <span class="badge text-bg-warning">
-                  평가 대기
-                </span>
-
-              </div>
-
-              <span class="badge text-bg-light">
-                4명
-              </span>
-
-            </div>
+      {% for team in target_teams %}
 
 
-            <hr>
+        <div class="col-md-6 col-xl-4">
 
 
-            <p class="text-muted small mb-2">
-              팀 구성원
-            </p>
+          <div
+            class="
+              card
+              border-0
+              shadow-sm
+              h-100
+
+              {% if team.team_id in completed_team_ids %}
+                bg-body-secondary
+              {% endif %}
+            "
+          >
 
 
-            <div class="d-flex flex-wrap gap-2 mb-4">
-
-              <span class="badge rounded-pill text-bg-light">
-                김민수
-              </span>
-
-              <span class="badge rounded-pill text-bg-light">
-                이지은
-              </span>
-
-              <span class="badge rounded-pill text-bg-light">
-                박준호
-              </span>
-
-              <span class="badge rounded-pill text-bg-light">
-                최유진
-              </span>
-
-            </div>
+            <div class="card-body p-4">
 
 
-            <div class="d-grid">
-
-              <button
-                type="button"
-                class="btn btn-primary"
-                data-bs-toggle="modal"
-                data-bs-target="#teamEvaluationModal"
-                onclick="selectTeam('1팀')"
+              <!-- ==============================
+                   팀 이름 / 상태
+              =============================== -->
+              <div
+                class="
+                  d-flex
+                  justify-content-between
+                  align-items-start
+                  mb-3
+                "
               >
-                평가하기
-              </button>
 
-            </div>
 
-          </div>
+                <div>
 
-        </div>
 
-      </div>
+                  <h4 class="fw-bold mb-1">
+                    {{ team.team_name }}
+                  </h4>
 
 
-      <!-- 2팀 : 평가 완료 -->
-      <div class="col-md-6 col-xl-4">
+                  {% if team.team_id in completed_team_ids %}
 
-        <div class="card border-0 shadow-sm h-100 bg-body-secondary">
+                    <span class="badge text-bg-success">
+                      평가 완료
+                    </span>
 
-          <div class="card-body p-4">
+                  {% else %}
 
-            <div
-              class="d-flex justify-content-between align-items-start mb-3"
-            >
+                    <span class="badge text-bg-warning">
+                      평가 대기
+                    </span>
 
-              <div>
+                  {% endif %}
 
-                <h4 class="fw-bold mb-1">
-                  2팀
-                </h4>
 
-                <span class="badge text-bg-success">
-                  평가 완료
-                </span>
-
-              </div>
-
-              <span class="badge text-bg-light">
-                4명
-              </span>
-
-            </div>
-
-
-            <hr>
-
-
-            <p class="text-muted small mb-2">
-              팀 구성원
-            </p>
-
-
-            <div class="d-flex flex-wrap gap-2 mb-4">
-
-              <span class="badge rounded-pill text-bg-light">
-                정학생
-              </span>
-
-              <span class="badge rounded-pill text-bg-light">
-                강학생
-              </span>
-
-              <span class="badge rounded-pill text-bg-light">
-                윤학생
-              </span>
-
-              <span class="badge rounded-pill text-bg-light">
-                한학생
-              </span>
-
-            </div>
-
-
-            <div class="d-grid">
-
-              <button
-                type="button"
-                class="btn btn-secondary"
-                disabled
-              >
-                평가 완료
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <!-- 4팀 -->
-      <div class="col-md-6 col-xl-4">
-
-        <div class="card border-0 shadow-sm h-100">
-
-          <div class="card-body p-4">
-
-            <div
-              class="d-flex justify-content-between align-items-start mb-3"
-            >
-
-              <div>
-
-                <h4 class="fw-bold mb-1">
-                  4팀
-                </h4>
-
-                <span class="badge text-bg-warning">
-                  평가 대기
-                </span>
-
-              </div>
-
-              <span class="badge text-bg-light">
-                4명
-              </span>
-
-            </div>
-
-
-            <hr>
-
-
-            <p class="text-muted small mb-2">
-              팀 구성원
-            </p>
-
-
-            <div class="d-flex flex-wrap gap-2 mb-4">
-
-              <span class="badge rounded-pill text-bg-light">
-                오학생
-              </span>
-
-              <span class="badge rounded-pill text-bg-light">
-                조학생
-              </span>
-
-              <span class="badge rounded-pill text-bg-light">
-                임학생
-              </span>
-
-              <span class="badge rounded-pill text-bg-light">
-                서학생
-              </span>
-
-            </div>
-
-
-            <div class="d-grid">
-
-              <button
-                type="button"
-                class="btn btn-primary"
-                data-bs-toggle="modal"
-                data-bs-target="#teamEvaluationModal"
-                onclick="selectTeam('4팀')"
-              >
-                평가하기
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-
-      <!-- 5팀 -->
-      <div class="col-md-6 col-xl-4">
-
-        <div class="card border-0 shadow-sm h-100">
-
-          <div class="card-body p-4">
-
-            <div
-              class="d-flex justify-content-between align-items-start mb-3"
-            >
-
-              <div>
-
-                <h4 class="fw-bold mb-1">
-                  5팀
-                </h4>
-
-                <span class="badge text-bg-warning">
-                  평가 대기
-                </span>
-
-              </div>
-
-              <span class="badge text-bg-light">
-                4명
-              </span>
-
-            </div>
-
-
-            <hr>
-
-
-            <p class="text-muted small mb-2">
-              팀 구성원
-            </p>
-
-
-            <div class="d-flex flex-wrap gap-2 mb-4">
-
-              <span class="badge rounded-pill text-bg-light">
-                류학생
-              </span>
-
-              <span class="badge rounded-pill text-bg-light">
-                신학생
-              </span>
-
-              <span class="badge rounded-pill text-bg-light">
-                장학생
-              </span>
-
-              <span class="badge rounded-pill text-bg-light">
-                문학생
-              </span>
-
-            </div>
-
-
-            <div class="d-grid">
-
-              <button
-                type="button"
-                class="btn btn-primary"
-                data-bs-toggle="modal"
-                data-bs-target="#teamEvaluationModal"
-                onclick="selectTeam('5팀')"
-              >
-                평가하기
-              </button>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
-    </div>
-
-  </main>
-
-  <!-- =========================================
-    팀 평가 모달 (정돈된 버전)
-========================================== -->
-<div class="modal fade" id="teamEvaluationModal" tabindex="-1" aria-labelledby="teamEvaluationModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg modal-dialog-centered modal-dialog-scrollable">
-    <div class="modal-content">
-      
-      <div class="modal-header">
-        <div>
-          <h5 class="modal-title fw-bold" id="teamEvaluationModalLabel">팀 평가</h5>
-          <small class="text-muted">
-            평가 대상: <strong id="selectedTeam">1팀</strong>
-          </small>
-        </div>
-        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-
-      <!-- 데이터를 서버로 쏘는 폼 태그 -->
-      <form method="POST" action="{% url 'team_eval_list' %}">
-        {% csrf_token %}
-        
-        <div class="modal-body p-4">
-          <div class="alert alert-light border mb-3">
-            각 평가 문항에 대해 1점부터 5점까지 선택해주세요.
-          </div>
-
-          <!-- views.py에서 보낸 5개 문항 동적 렌더링 -->
-          {% for question in questions %}
-          <div class="card border mb-3">
-            <div class="card-body">
-              <div class="d-flex gap-3">
-                <span class="badge text-bg-primary align-self-start">
-                  {{ forloop.counter }}
-                </span>
-                
-                <div class="flex-grow-1">
-                  <h6 class="fw-bold mb-2">
-                    {{ question.text }}
-                  </h6>
-
-                  <div class="btn-group" role="group">
-                    {% for i in "12345" %}
-                    <input
-                      type="radio"
-                      class="btn-check"
-                      name="score_{{ question.id }}"
-                      id="q{{ question.id }}-{{ i }}"
-                      value="{{ i }}"
-                      autocomplete="off"
-                      required
-                    >
-                    <label class="btn btn-outline-primary" for="q{{ question.id }}-{{ i }}">
-                      {{ i }}점
-                    </label>
-                    {% endfor %}
-                  </div>
                 </div>
+
+
+
+                <span class="badge text-bg-light">
+
+                  팀 ID {{ team.team_id }}
+
+                </span>
+
+
               </div>
+
+
+
+              <hr>
+
+
+
+              <!-- ==============================
+                   안내
+              =============================== -->
+              <p class="text-muted small mb-4">
+
+
+                {% if team.team_id in completed_team_ids %}
+
+                  이 팀에 대한 평가가 완료되었습니다.
+
+                {% else %}
+
+                  평가하기 버튼을 눌러
+                  평가를 진행하세요.
+
+                {% endif %}
+
+
+              </p>
+
+
+
+              <!-- ==============================
+                   평가 버튼
+              =============================== -->
+              <div class="d-grid">
+
+
+                {% if team.team_id in completed_team_ids %}
+
+
+                  <button
+                    type="button"
+                    class="btn btn-secondary"
+                    disabled
+                  >
+                    평가 완료
+                  </button>
+
+
+                {% else %}
+
+
+                  <button
+                    type="button"
+                    class="btn btn-primary"
+
+                    data-bs-toggle="modal"
+
+                    data-bs-target="#teamEvaluationModal"
+
+                    data-team-id="{{ team.team_id }}"
+
+                    data-team-name="{{ team.team_name }}"
+                  >
+                    평가하기
+                  </button>
+
+
+                {% endif %}
+
+
+              </div>
+
+
             </div>
+
           </div>
-          {% endfor %}
 
         </div>
 
-        <div class="modal-footer">
-          <button type="button" class="btn btn-outline-secondary" data-bs-dismiss="modal">
-            취소
-          </button>
-          <button type="submit" class="btn btn-primary">
-            제출하기
-          </button>
+
+      {% empty %}
+
+
+        <div class="col-12">
+
+          <div class="alert alert-secondary">
+
+            현재 평가할 수 있는
+            다른 팀이 없습니다.
+
+          </div>
+
         </div>
 
-      </form>
+
+      {% endfor %}
+
 
     </div>
-  </div>
-</div>
 
-  <!-- =========================================
-       평가 완료 모달
-  ========================================== -->
+
+  {% endif %}
+
+
+</main>
+
+
+
+<!-- ==========================================
+     팀 평가 Modal
+
+     ★ current_round가 있을 때만 생성
+========================================== -->
+{% if current_round %}
+
+<div
+  class="modal fade"
+  id="teamEvaluationModal"
+  tabindex="-1"
+  aria-labelledby="teamEvaluationModalLabel"
+  aria-hidden="true"
+>
+
 
   <div
-    class="modal fade"
-    id="completeModal"
-    tabindex="-1"
+    class="
+      modal-dialog
+      modal-lg
+      modal-dialog-centered
+    "
   >
 
-    <div class="modal-dialog modal-dialog-centered">
 
-      <div class="modal-content">
+    <div class="modal-content">
 
-        <div class="modal-body text-center p-5">
 
-          <div class="mb-3">
+      <form
+        method="POST"
+        action="{% url 'team_eval_list' %}"
+        id="teamEvaluationForm"
+      >
 
-            <span
-              class="badge rounded-pill text-bg-success fs-3"
+
+        {% csrf_token %}
+
+
+
+        <!-- 실제 평가 대상 팀 ID -->
+        <input
+          type="hidden"
+          name="target_team_id"
+          id="targetTeamId"
+        >
+
+
+
+        <!-- ====================================
+             Header
+        ===================================== -->
+        <div class="modal-header">
+
+
+          <div>
+
+
+            <h5
+              class="modal-title fw-bold"
+              id="teamEvaluationModalLabel"
             >
-              ✓
-            </span>
+              팀 평가
+            </h5>
+
+
+            <small class="text-muted">
+
+              평가 대상:
+
+              <strong id="selectedTeam">
+                -
+              </strong>
+
+            </small>
+
 
           </div>
 
-          <h4 class="fw-bold mb-3">
-            평가가 완료되었습니다.
-          </h4>
 
-          <p class="text-muted mb-4">
-            제출한 평가는 다시 수정할 수 없습니다.
-          </p>
 
           <button
             type="button"
-            class="btn btn-primary px-5"
+            class="btn-close"
             data-bs-dismiss="modal"
+            aria-label="닫기"
           >
-            확인
           </button>
+
 
         </div>
 
-      </div>
+
+
+        <!-- ====================================
+             Body
+        ===================================== -->
+        <div class="modal-body p-4">
+
+
+          <div class="alert alert-light border mb-4">
+
+            각 평가 문항에 대해
+            1점부터 5점까지 선택해주세요.
+
+          </div>
+
+
+
+          <!-- ==================================
+               평가 문항
+          =================================== -->
+          {% for question in questions %}
+
+
+            <div class="card border mb-3">
+
+
+              <div class="card-body">
+
+
+                <div class="d-flex gap-3">
+
+
+                  <!-- 번호 -->
+                  <span
+                    class="
+                      badge
+                      text-bg-primary
+                      align-self-start
+                    "
+                  >
+
+                    {{ forloop.counter }}
+
+                  </span>
+
+
+
+                  <div class="flex-grow-1">
+
+
+                    <!-- 문항 -->
+                    <h6 class="fw-bold mb-3">
+
+                      {{ question.question_text }}
+
+                    </h6>
+
+
+
+                    <!-- ========================
+                         1~5점
+                    ========================= -->
+                    <div
+                      class="btn-group flex-wrap"
+                      role="group"
+                    >
+
+
+                      {% for score in "12345" %}
+
+
+                        <input
+                          type="radio"
+
+                          class="btn-check"
+
+                          name="question_{{ question.question_id }}"
+
+                          id="team_q{{ question.question_id }}_score{{ score }}"
+
+                          value="{{ score }}"
+
+                          autocomplete="off"
+
+                          required
+                        >
+
+
+
+                        <label
+                          class="btn btn-outline-primary"
+
+                          for="team_q{{ question.question_id }}_score{{ score }}"
+                        >
+
+                          {{ score }}점
+
+                        </label>
+
+
+                      {% endfor %}
+
+
+                    </div>
+
+
+                  </div>
+
+
+                </div>
+
+
+              </div>
+
+            </div>
+
+
+          {% empty %}
+
+
+            <div class="alert alert-warning">
+
+              현재 등록된 팀 평가 문항이 없습니다.
+
+            </div>
+
+
+          {% endfor %}
+
+
+        </div>
+
+
+
+        <!-- ====================================
+             Footer
+        ===================================== -->
+        <div class="modal-footer">
+
+
+          <button
+            type="button"
+            class="btn btn-outline-secondary"
+            data-bs-dismiss="modal"
+          >
+            취소
+          </button>
+
+
+
+          {% if questions %}
+
+            <button
+              type="submit"
+              class="btn btn-primary"
+            >
+              제출하기
+            </button>
+
+          {% endif %}
+
+
+        </div>
+
+
+      </form>
+
 
     </div>
 
   </div>
 
+</div>
 
-<!-- Bootstrap JS -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+{% endif %}
 
- <!-- 팀명 변경 및 완료 모달 제어 스크립트 -->
-  <script>
-    function selectTeam(teamName) {
-      document.getElementById("selectedTeam").textContent = teamName;
+
+
+<!-- ==========================================
+     Bootstrap JS
+========================================== -->
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+>
+</script>
+
+
+
+<!-- ==========================================
+     Modal 팀 선택 처리
+========================================== -->
+{% if current_round %}
+
+<script>
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function () {
+
+
+    const modalElement =
+      document.getElementById(
+        "teamEvaluationModal"
+      );
+
+
+    const targetTeamId =
+      document.getElementById(
+        "targetTeamId"
+      );
+
+
+    const selectedTeam =
+      document.getElementById(
+        "selectedTeam"
+      );
+
+
+    const form =
+      document.getElementById(
+        "teamEvaluationForm"
+      );
+
+
+    // ----------------------------------------
+    // 요소 존재 확인
+    // ----------------------------------------
+    if (
+      !modalElement
+      || !targetTeamId
+      || !selectedTeam
+      || !form
+    ) {
+
+      return;
+
     }
 
-    document.addEventListener("DOMContentLoaded", function() {
-      const teamEvalModalEl = document.getElementById('teamEvaluationModal');
-      const completeModalEl = document.getElementById('completeModal');
-      
-      if (!teamEvalModalEl || !completeModalEl) return;
 
-      const form = teamEvalModalEl.querySelector('form');
-      if (!form) return;
+    // ========================================
+    // Modal 열리기 직전
+    // ========================================
+    modalElement.addEventListener(
+      "show.bs.modal",
+      function (event) {
 
-      const submitBtn = form.querySelector('button[type="submit"]');
 
-      if (submitBtn) {
-        submitBtn.addEventListener('click', function(e) {
-          if (!form.checkValidity()) {
-            form.reportValidity();
-            return;
+        const button =
+          event.relatedTarget;
+
+
+        if (!button) {
+
+          return;
+
+        }
+
+
+        const teamId =
+          button.getAttribute(
+            "data-team-id"
+          );
+
+
+        const teamName =
+          button.getAttribute(
+            "data-team-name"
+          );
+
+
+        // 평가 대상 팀 ID
+        targetTeamId.value =
+          teamId;
+
+
+        // 평가 대상 팀 이름
+        selectedTeam.textContent =
+          teamName;
+
+
+        // 이전 선택 초기화
+        const radios =
+          form.querySelectorAll(
+            'input[type="radio"]'
+          );
+
+
+        radios.forEach(
+          function (radio) {
+
+            radio.checked = false;
+
           }
+        );
 
-          e.preventDefault(); // 기본 제출 막기
 
-          // 1. 입력 모달 닫기
-          const evalModal = bootstrap.Modal.getInstance(teamEvalModalEl) || new bootstrap.Modal(teamEvalModalEl);
-          evalModal.hide();
-
-          // 2. 완료 모달 띄우기
-          const completeModal = new bootstrap.Modal(completeModalEl);
-          completeModal.show();
-
-          // 3. 완료 모달 안의 [확인] 버튼을 누를 때 폼 제출
-          const confirmBtn = completeModalEl.querySelector('.btn-primary');
-          confirmBtn.onclick = function() {
-            form.submit();
-          };
-        });
       }
-    });
-  </script>
+    );
+
+
+  }
+);
+
+</script>
+
+{% endif %}
+
+
+</body>
+
+</html>

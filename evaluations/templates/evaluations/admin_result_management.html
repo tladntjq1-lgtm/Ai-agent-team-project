@@ -1,21 +1,14 @@
 <!DOCTYPE html>
 <html lang="ko">
+
 <head>
+
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!--
-  UI ID: UI-14
-  화면명: 평가 결과 / 석차 관리
-
-  주요 기능
-  - 평가 점수 집계
-  - 선생님 평가 미입력 확인
-  - 개인 최종 점수 확인
-  - 개인 석차 확인
-  - 팀 석차 확인
-  - 결과 공개
-  -->
+  <meta
+    name="viewport"
+    content="width=device-width, initial-scale=1.0"
+  >
 
   <title>참교육 | 평가 결과 관리</title>
 
@@ -23,176 +16,452 @@
     href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
     rel="stylesheet"
   >
+
 </head>
+
 
 <body class="bg-light">
 
-  <!-- 상단 네비게이션 -->
-  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
-    <div class="container">
+<!-- ==========================================
+     네비게이션
+========================================== -->
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
-      <a
-        class="navbar-brand fw-bold"
-        href="{% url 'admin_dashboard' %}"
-      >
-        참교육 ADMIN
-      </a>
+  <div class="container">
 
-      <button
-        class="navbar-toggler"
-        type="button"
-        data-bs-toggle="collapse"
-        data-bs-target="#adminNavbar"
-      >
-        <span class="navbar-toggler-icon"></span>
-      </button>
+    <a
+      class="navbar-brand fw-bold"
+      href="{% url 'admin_dashboard' %}"
+    >
+      참교육 ADMIN
+    </a>
+
+
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#adminNavbar"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+
+
+    <div
+      class="collapse navbar-collapse"
+      id="adminNavbar"
+    >
+
+      <ul class="navbar-nav ms-auto align-items-lg-center">
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'admin_dashboard' %}"
+          >
+            대시보드
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'admin_evaluation_round' %}"
+          >
+            평가 관리
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'admin_team_management' %}"
+          >
+            팀 관리
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'admin_student_management' %}"
+          >
+            학생 관리
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link"
+            href="{% url 'admin_teacher_evaluation' %}"
+          >
+            선생님 평가
+          </a>
+
+        </li>
+
+
+        <li class="nav-item">
+
+          <a
+            class="nav-link active"
+            href="{% url 'admin_result_management' %}"
+          >
+            결과 관리
+          </a>
+
+        </li>
+
+
+        <li class="nav-item ms-lg-3">
+
+          <a
+            class="btn btn-outline-light btn-sm"
+            href="{% url 'logout' %}"
+          >
+            로그아웃
+          </a>
+
+        </li>
+
+
+      </ul>
+
+    </div>
+
+  </div>
+
+</nav>
+
+
+
+<!-- ==========================================
+     메인
+========================================== -->
+<main class="container py-5">
+
+
+  <!-- ========================================
+       제목
+  ========================================= -->
+  <div
+    class="
+      d-flex
+      justify-content-between
+      align-items-center
+      mb-4
+    "
+  >
+
+    <div>
+
+      <h1 class="h3 fw-bold mb-1">
+        평가 결과 / 석차 관리
+      </h1>
+
+      <p class="text-muted mb-0">
+        실제 평가 데이터를 집계하고 최종 결과를 관리합니다.
+      </p>
+
+    </div>
+
+
+    {% if current_round %}
+
+
+      {% if current_round.status == 'READY' %}
+
+        <span class="badge text-bg-warning fs-6">
+          READY
+        </span>
+
+
+      {% elif current_round.status == 'IN_PROGRESS' %}
+
+        <span class="badge text-bg-success fs-6">
+          IN_PROGRESS
+        </span>
+
+
+      {% elif current_round.status == 'COMPLETED' %}
+
+        <span class="badge text-bg-secondary fs-6">
+          COMPLETED
+        </span>
+
+
+      {% else %}
+
+        <span class="badge text-bg-dark fs-6">
+
+          {{ current_round.status }}
+
+        </span>
+
+
+      {% endif %}
+
+
+    {% endif %}
+
+  </div>
+
+
+
+  <!-- ========================================
+       Django 메시지
+  ========================================= -->
+  {% if messages %}
+
+    {% for message in messages %}
 
       <div
-        class="collapse navbar-collapse"
-        id="adminNavbar"
+        class="
+          alert
+          alert-dismissible
+          fade
+          show
+
+          {% if message.tags == 'success' %}
+            alert-success
+
+          {% elif message.tags == 'error' %}
+            alert-danger
+
+          {% elif message.tags == 'warning' %}
+            alert-warning
+
+          {% else %}
+            alert-info
+
+          {% endif %}
+        "
+        role="alert"
       >
 
-        <ul class="navbar-nav ms-auto">
+        {{ message }}
 
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{% url 'admin_dashboard' %}"
-            >
-              대시보드
-            </a>
-          </li>
 
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{% url 'admin_evaluation_round' %}"
-            >
-              평가 관리
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{% url 'admin_team_management' %}"
-            >
-              팀 관리
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{% url 'admin_student_management' %}"
-            >
-              학생 관리
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a
-              class="nav-link"
-              href="{% url 'admin_teacher_evaluation' %}"
-            >
-              선생님 평가
-            </a>
-          </li>
-
-          <li class="nav-item">
-            <a
-              class="nav-link active"
-              href="{% url 'admin_result_management' %}"
-            >
-              결과 관리
-            </a>
-          </li>
-
-        </ul>
+        <button
+          type="button"
+          class="btn-close"
+          data-bs-dismiss="alert"
+          aria-label="닫기"
+        >
+        </button>
 
       </div>
 
-    </div>
+    {% endfor %}
 
-  </nav>
+  {% endif %}
 
 
-  <main class="container py-5">
 
-    <!-- 제목 -->
-    <div class="d-flex justify-content-between align-items-center mb-4">
+  <!-- ========================================
+       평가 회차 없음
+  ========================================= -->
+  {% if not current_round %}
 
-      <div>
 
-        <h1 class="h3 fw-bold mb-1">
-          평가 결과 / 석차 관리
-        </h1>
+    <div class="card border-0 shadow-sm">
 
-        <p class="text-muted mb-0">
-          평가 점수를 집계하고 최종 결과를 공개합니다.
+      <div class="card-body text-center py-5">
+
+        <h4 class="fw-bold mb-3">
+          평가 회차가 없습니다.
+        </h4>
+
+
+        <p class="text-muted mb-4">
+          평가 회차를 생성한 후 결과를 확인할 수 있습니다.
         </p>
 
-      </div>
 
-      <span class="badge text-bg-success">
-        IN_PROGRESS
-      </span>
+        <a
+          href="{% url 'admin_evaluation_round' %}"
+          class="btn btn-primary"
+        >
+          평가 회차 생성
+        </a>
+
+      </div>
 
     </div>
 
 
-    <!-- 평가 회차 -->
+
+  {% else %}
+
+
+
+    <!-- ======================================
+         평가 회차 선택
+    ======================================= -->
     <div class="card border-0 shadow-sm mb-4">
 
       <div class="card-body p-4">
 
+
         <div class="row g-3 align-items-end">
+
 
           <div class="col-md-8">
 
-            <label class="form-label fw-semibold">
+            <label
+              for="roundSelect"
+              class="form-label fw-semibold"
+            >
               평가 회차
             </label>
 
-            <select class="form-select">
 
-              <option selected>
-                2차 프로젝트 평가 - 참교육 학생 평가 시스템
-              </option>
+            <select
+              class="form-select"
+              id="roundSelect"
+            >
 
-              <option>
-                1차 프로젝트 평가 - 데이터 분석 프로젝트
-              </option>
+
+              {% for evaluation_round in all_rounds %}
+
+
+                <option
+                  value="{{ evaluation_round.round_id }}"
+
+                  {% if evaluation_round.round_id == current_round.round_id %}
+                    selected
+                  {% endif %}
+                >
+
+                  {{ evaluation_round.round_name }}
+
+                  -
+
+                  {% if evaluation_round.status == 'READY' %}
+                    READY
+                  {% elif evaluation_round.status == 'IN_PROGRESS' %}
+                    진행 중
+                  {% elif evaluation_round.status == 'COMPLETED' %}
+                    종료
+                  {% else %}
+                    {{ evaluation_round.status }}
+                  {% endif %}
+
+                </option>
+
+
+              {% endfor %}
+
 
             </select>
 
           </div>
 
 
+
           <div class="col-md-4">
 
+
             <button
+              type="button"
               class="btn btn-primary w-100"
               data-bs-toggle="modal"
               data-bs-target="#calculateModal"
             >
-              점수 다시 계산
+              점수 / 등급 다시 계산
             </button>
+
 
           </div>
 
+
         </div>
+
+
+
+        {% if project %}
+
+          <div class="mt-3">
+
+            <span class="text-muted small">
+              프로젝트
+            </span>
+
+            <span class="fw-semibold ms-2">
+              {{ project.project_name }}
+            </span>
+
+          </div>
+
+        {% endif %}
+
+
+
+        <div class="mt-2">
+
+          <span class="text-muted small">
+            평가 기간
+          </span>
+
+          <span class="fw-semibold ms-2">
+
+            {% if current_round.start_date %}
+
+              {{ current_round.start_date|date:"Y.m.d" }}
+
+            {% else %}
+
+              -
+
+            {% endif %}
+
+
+            ~
+
+
+            {% if current_round.end_date %}
+
+              {{ current_round.end_date|date:"Y.m.d" }}
+
+            {% else %}
+
+              -
+
+            {% endif %}
+
+          </span>
+
+        </div>
+
 
       </div>
 
     </div>
 
 
-    <!-- 집계 상태 -->
+
+    <!-- ======================================
+         전체 진행 현황
+    ======================================= -->
     <div class="row g-3 mb-4">
 
-      <div class="col-md-3">
+
+      <div class="col-md-6 col-xl-3">
 
         <div class="card border-0 shadow-sm h-100">
 
@@ -203,7 +472,7 @@
             </p>
 
             <h3 class="fw-bold mb-0">
-              20명
+              {{ total_students|default:0 }}명
             </h3>
 
           </div>
@@ -213,19 +482,27 @@
       </div>
 
 
-      <div class="col-md-3">
+
+      <div class="col-md-6 col-xl-3">
 
         <div class="card border-0 shadow-sm h-100">
 
           <div class="card-body">
 
             <p class="text-muted small mb-1">
-              팀 평가 완료
+              학생 팀 평가
             </p>
 
-            <h3 class="fw-bold text-success mb-0">
-              100%
+            <h3 class="fw-bold text-primary mb-1">
+              {{ team_progress|default:0 }}%
             </h3>
+
+            <small class="text-muted">
+              {{ team_completed_count|default:0 }}
+              /
+              {{ team_target_count|default:0 }}
+              완료
+            </small>
 
           </div>
 
@@ -234,19 +511,27 @@
       </div>
 
 
-      <div class="col-md-3">
+
+      <div class="col-md-6 col-xl-3">
 
         <div class="card border-0 shadow-sm h-100">
 
           <div class="card-body">
 
             <p class="text-muted small mb-1">
-              개인 평가 완료
+              개인 평가
             </p>
 
-            <h3 class="fw-bold text-success mb-0">
-              100%
+            <h3 class="fw-bold text-primary mb-1">
+              {{ individual_progress|default:0 }}%
             </h3>
+
+            <small class="text-muted">
+              {{ individual_completed_count|default:0 }}
+              /
+              {{ individual_target_count|default:0 }}
+              완료
+            </small>
 
           </div>
 
@@ -255,7 +540,8 @@
       </div>
 
 
-      <div class="col-md-3">
+
+      <div class="col-md-6 col-xl-3">
 
         <div class="card border-0 shadow-sm h-100">
 
@@ -265,58 +551,376 @@
               선생님 평가
             </p>
 
-            <h3 class="fw-bold text-warning mb-0">
-              4 / 5팀
+            <h3 class="fw-bold text-warning mb-1">
+              {{ teacher_progress|default:0 }}%
             </h3>
 
+            <small class="text-muted">
+              {{ teacher_completed_count|default:0 }}
+              /
+              {{ teacher_target_count|default:0 }}
+              완료
+            </small>
+
           </div>
 
         </div>
 
       </div>
 
-    </div>
-
-
-    <!-- 선생님 평가 누락 경고 -->
-    <div class="alert alert-warning">
-
-      <div class="d-flex justify-content-between align-items-center">
-
-        <div>
-
-          <strong>
-            선생님 평가가 입력되지 않은 팀이 있습니다.
-          </strong>
-
-          <div class="small mt-1">
-            5팀의 선생님 평가 점수가 아직 입력되지 않았습니다.
-          </div>
-
-        </div>
-
-        <a
-          href="{% url 'admin_teacher_evaluation' %}"
-          class="btn btn-warning"
-        >
-          평가 입력하기
-        </a>
-
-      </div>
 
     </div>
 
 
-    <!-- 점수 계산 기준 -->
+
+    <!-- ======================================
+         진행률 바
+    ======================================= -->
     <div class="card border-0 shadow-sm mb-4">
 
       <div class="card-body p-4">
 
-        <h5 class="fw-bold mb-3">
-          최종 점수 계산 기준
+
+        <h5 class="fw-bold mb-4">
+          평가 진행 현황
         </h5>
 
+
+
+        <div class="mb-4">
+
+          <div
+            class="
+              d-flex
+              justify-content-between
+              mb-2
+            "
+          >
+
+            <span class="fw-semibold">
+              학생 팀 평가
+            </span>
+
+            <span class="badge text-bg-primary">
+              {{ team_progress|default:0 }}%
+            </span>
+
+          </div>
+
+
+          <div class="progress">
+
+            <div
+              class="progress-bar"
+              style="width: {{ team_progress|default:0 }}%;"
+            >
+              {{ team_progress|default:0 }}%
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <div class="mb-4">
+
+          <div
+            class="
+              d-flex
+              justify-content-between
+              mb-2
+            "
+          >
+
+            <span class="fw-semibold">
+              개인 평가
+            </span>
+
+            <span class="badge text-bg-primary">
+              {{ individual_progress|default:0 }}%
+            </span>
+
+          </div>
+
+
+          <div class="progress">
+
+            <div
+              class="progress-bar"
+              style="width: {{ individual_progress|default:0 }}%;"
+            >
+              {{ individual_progress|default:0 }}%
+            </div>
+
+          </div>
+
+        </div>
+
+
+
+        <div>
+
+          <div
+            class="
+              d-flex
+              justify-content-between
+              mb-2
+            "
+          >
+
+            <span class="fw-semibold">
+              선생님 평가
+            </span>
+
+            <span class="badge text-bg-warning">
+              {{ teacher_progress|default:0 }}%
+            </span>
+
+          </div>
+
+
+          <div class="progress">
+
+            <div
+              class="progress-bar"
+              style="width: {{ teacher_progress|default:0 }}%;"
+            >
+              {{ teacher_progress|default:0 }}%
+            </div>
+
+          </div>
+
+        </div>
+
+
+      </div>
+
+    </div>
+
+
+
+    <!-- ======================================
+         선생님 평가 상세
+    ======================================= -->
+    <div class="card border-0 shadow-sm mb-4">
+
+      <div class="card-body p-4">
+
+
+        <div
+          class="
+            d-flex
+            justify-content-between
+            align-items-center
+            mb-3
+          "
+        >
+
+          <h5 class="fw-bold mb-0">
+            선생님 평가 현황
+          </h5>
+
+
+          <a
+            href="{% url 'admin_teacher_evaluation' %}"
+            class="btn btn-sm btn-outline-primary"
+          >
+            평가 화면
+          </a>
+
+        </div>
+
+
+
         <div class="row g-3">
+
+
+          <div class="col-md-6">
+
+            <div class="border rounded p-3 h-100">
+
+              <div
+                class="
+                  d-flex
+                  justify-content-between
+                  align-items-center
+                "
+              >
+
+                <div>
+
+                  <p class="text-muted small mb-1">
+                    팀 평가
+                  </p>
+
+                  <h5 class="fw-bold mb-0">
+
+                    {{ teacher_team_completed|default:0 }}
+
+                    /
+
+                    {{ total_teams|default:0 }}팀
+
+                  </h5>
+
+                </div>
+
+
+                <span class="badge text-bg-primary">
+                  {{ teacher_team_progress|default:0 }}%
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+
+          <div class="col-md-6">
+
+            <div class="border rounded p-3 h-100">
+
+              <div
+                class="
+                  d-flex
+                  justify-content-between
+                  align-items-center
+                "
+              >
+
+                <div>
+
+                  <p class="text-muted small mb-1">
+                    학생 개인 평가
+                  </p>
+
+                  <h5 class="fw-bold mb-0">
+
+                    {{ teacher_student_completed|default:0 }}
+
+                    /
+
+                    {{ total_students|default:0 }}명
+
+                  </h5>
+
+                </div>
+
+
+                <span class="badge text-bg-primary">
+                  {{ teacher_student_progress|default:0 }}%
+                </span>
+
+              </div>
+
+            </div>
+
+          </div>
+
+
+        </div>
+
+
+      </div>
+
+    </div>
+
+
+
+    <!-- ======================================
+         누락 평가 안내
+    ======================================= -->
+    {% if missing_teacher_team_count or missing_teacher_student_count %}
+
+
+      <div class="alert alert-warning">
+
+
+        <div
+          class="
+            d-flex
+            flex-column
+            flex-md-row
+            justify-content-between
+            align-items-md-center
+            gap-3
+          "
+        >
+
+
+          <div>
+
+            <strong>
+              아직 입력되지 않은 선생님 평가가 있습니다.
+            </strong>
+
+            <div class="small mt-1">
+
+              팀 평가 미완료:
+
+              <strong>
+                {{ missing_teacher_team_count|default:0 }}팀
+              </strong>
+
+              /
+
+              학생 평가 미완료:
+
+              <strong>
+                {{ missing_teacher_student_count|default:0 }}명
+              </strong>
+
+            </div>
+
+          </div>
+
+
+          <a
+            href="{% url 'admin_teacher_evaluation' %}"
+            class="btn btn-warning"
+          >
+            평가 입력하기
+          </a>
+
+
+        </div>
+
+
+      </div>
+
+
+    {% else %}
+
+
+      <div class="alert alert-success">
+
+        선생님의 팀 평가와 학생 개인 평가가 모두 완료되었습니다.
+
+      </div>
+
+
+    {% endif %}
+
+
+
+    <!-- ======================================
+         최종 점수 / 등급 기준
+    ======================================= -->
+    <div class="card border-0 shadow-sm mb-4">
+
+      <div class="card-body p-4">
+
+
+        <h5 class="fw-bold mb-3">
+          학생 최종 점수 계산 기준
+        </h5>
+
+
+        <div class="row g-3 mb-4">
+
 
           <div class="col-md-4">
 
@@ -333,6 +937,7 @@
             </div>
 
           </div>
+
 
 
           <div class="col-md-4">
@@ -352,6 +957,7 @@
           </div>
 
 
+
           <div class="col-md-4">
 
             <div class="border rounded p-3">
@@ -368,23 +974,145 @@
 
           </div>
 
+
         </div>
+
+
+        <div class="text-muted small mb-4">
+
+          최종 점수 =
+          학생 팀 평가 × 30%
+          +
+          개인 평가 × 30%
+          +
+          선생님 평가 × 40%
+
+        </div>
+
+
+
+        <hr>
+
+
+
+        <!-- ==================================
+             등급 기준
+        =================================== -->
+        <h6 class="fw-bold mb-3">
+          등급 기준
+        </h6>
+
+
+        <div class="row g-3">
+
+
+          <div class="col-6 col-md-3">
+
+            <div class="border rounded p-3 text-center">
+
+              <span class="badge text-bg-primary fs-5 mb-2">
+                S
+              </span>
+
+              <div class="small">
+                90점 이상
+              </div>
+
+            </div>
+
+          </div>
+
+
+
+          <div class="col-6 col-md-3">
+
+            <div class="border rounded p-3 text-center">
+
+              <span class="badge text-bg-success fs-5 mb-2">
+                A
+              </span>
+
+              <div class="small">
+                80점 이상
+              </div>
+
+            </div>
+
+          </div>
+
+
+
+          <div class="col-6 col-md-3">
+
+            <div class="border rounded p-3 text-center">
+
+              <span class="badge text-bg-warning fs-5 mb-2">
+                B
+              </span>
+
+              <div class="small">
+                70점 이상
+              </div>
+
+            </div>
+
+          </div>
+
+
+
+          <div class="col-6 col-md-3">
+
+            <div class="border rounded p-3 text-center">
+
+              <span class="badge text-bg-secondary fs-5 mb-2">
+                C
+              </span>
+
+              <div class="small">
+                70점 미만
+              </div>
+
+            </div>
+
+          </div>
+
+
+        </div>
+
+
+
+        <div class="alert alert-light border mt-4 mb-0">
+
+          <small class="text-muted">
+
+            팀 평가, 개인 평가, 선생님 평가 중
+            하나라도 점수가 존재하지 않으면
+            최종 점수와 등급은 미산정 처리됩니다.
+
+          </small>
+
+        </div>
+
 
       </div>
 
     </div>
 
 
-    <!-- 탭 -->
+
+    <!-- ======================================
+         결과 TAB
+    ======================================= -->
     <div class="card border-0 shadow-sm mb-4">
 
       <div class="card-body p-4">
 
+
         <ul
           class="nav nav-tabs mb-4"
           id="resultTab"
-          role="tablist"
         >
+
 
           <li class="nav-item">
 
@@ -399,6 +1127,7 @@
 
           </li>
 
+
           <li class="nav-item">
 
             <button
@@ -412,19 +1141,32 @@
 
           </li>
 
+
         </ul>
+
 
 
         <div class="tab-content">
 
 
-          <!-- 개인 결과 -->
+          <!-- ==================================
+               개인 결과
+          =================================== -->
           <div
             class="tab-pane fade show active"
             id="studentResult"
           >
 
-            <div class="d-flex justify-content-between align-items-center mb-3">
+
+            <div
+              class="
+                d-flex
+                justify-content-between
+                align-items-center
+                mb-3
+              "
+            >
+
 
               <div>
 
@@ -432,24 +1174,36 @@
                   개인 최종 결과
                 </h5>
 
+
                 <p class="text-muted small mb-0">
-                  최종 점수 기준으로 석차가 계산됩니다.
+
+                  모든 필수 평가 점수가 존재하는 학생만
+                  최종 점수, 등급, 석차가 계산됩니다.
+
                 </p>
 
               </div>
 
+
               <span class="badge text-bg-secondary">
-                전체 20명
+
+                전체 {{ total_students|default:0 }}명
+
               </span>
+
 
             </div>
 
 
+
             <div class="table-responsive">
+
 
               <table class="table table-hover align-middle">
 
+
                 <thead class="table-light">
+
 
                   <tr>
 
@@ -482,192 +1236,328 @@
                     </th>
 
                     <th>
+                      등급
+                    </th>
+
+                    <th>
                       상태
                     </th>
 
                   </tr>
 
+
                 </thead>
+
 
 
                 <tbody>
 
-                  <tr>
 
-                    <td>
-                      <span class="badge text-bg-warning">
-                        1위
-                      </span>
-                    </td>
-
-                    <td class="fw-semibold">
-                      이학생
-                    </td>
-
-                    <td>
-                      1팀
-                    </td>
-
-                    <td>
-                      94.0
-                    </td>
-
-                    <td>
-                      96.0
-                    </td>
-
-                    <td>
-                      95.0
-                    </td>
-
-                    <td class="fw-bold">
-                      95.0
-                    </td>
-
-                    <td>
-                      <span class="badge text-bg-success">
-                        계산 완료
-                      </span>
-                    </td>
-
-                  </tr>
+                  {% for result in student_results %}
 
 
-                  <tr>
-
-                    <td>
-                      <span class="badge text-bg-secondary">
-                        2위
-                      </span>
-                    </td>
-
-                    <td class="fw-semibold">
-                      정학생
-                    </td>
-
-                    <td>
-                      2팀
-                    </td>
-
-                    <td>
-                      91.2
-                    </td>
-
-                    <td>
-                      94.0
-                    </td>
-
-                    <td>
-                      95.0
-                    </td>
-
-                    <td class="fw-bold">
-                      93.6
-                    </td>
-
-                    <td>
-                      <span class="badge text-bg-success">
-                        계산 완료
-                      </span>
-                    </td>
-
-                  </tr>
+                    <tr
+                      {% if not result.calculation_complete %}
+                        class="table-warning"
+                      {% endif %}
+                    >
 
 
-                  <tr>
-
-                    <td>
-                      3위
-                    </td>
-
-                    <td class="fw-semibold">
-                      김학생
-                    </td>
-
-                    <td>
-                      1팀
-                    </td>
-
-                    <td>
-                      88.0
-                    </td>
-
-                    <td>
-                      92.0
-                    </td>
-
-                    <td>
-                      95.0
-                    </td>
-
-                    <td class="fw-bold">
-                      92.0
-                    </td>
-
-                    <td>
-                      <span class="badge text-bg-success">
-                        계산 완료
-                      </span>
-                    </td>
-
-                  </tr>
+                      <!-- ==================================
+                           석차
+                      =================================== -->
+                      <td>
 
 
-                  <!-- 선생님 점수 누락 예시 -->
-                  <tr class="table-warning">
+                        {% if result.rank %}
 
-                    <td>
-                      -
-                    </td>
 
-                    <td class="fw-semibold">
-                      송학생
-                    </td>
+                          {% if result.rank == 1 %}
 
-                    <td>
-                      5팀
-                    </td>
+                            <span class="badge text-bg-warning">
+                              1위
+                            </span>
 
-                    <td>
-                      90.1
-                    </td>
 
-                    <td>
-                      88.0
-                    </td>
+                          {% elif result.rank == 2 %}
 
-                    <td class="text-danger fw-semibold">
-                      미입력
-                    </td>
+                            <span class="badge text-bg-secondary">
+                              2위
+                            </span>
 
-                    <td>
-                      -
-                    </td>
 
-                    <td>
-                      <span class="badge text-bg-warning">
-                        계산 대기
-                      </span>
-                    </td>
+                          {% elif result.rank == 3 %}
 
-                  </tr>
+                            <span class="badge text-bg-secondary">
+                              3위
+                            </span>
+
+
+                          {% else %}
+
+                            {{ result.rank }}위
+
+                          {% endif %}
+
+
+                        {% else %}
+
+                          -
+
+                        {% endif %}
+
+
+                      </td>
+
+
+
+                      <!-- ==================================
+                           학생
+                      =================================== -->
+                      <td class="fw-semibold">
+
+                        {{ result.name }}
+
+                      </td>
+
+
+
+                      <!-- ==================================
+                           팀
+                      =================================== -->
+                      <td>
+
+                        {{ result.team_name }}
+
+                      </td>
+
+
+
+                      <!-- ==================================
+                           팀 평가
+                      =================================== -->
+                      <td>
+
+
+                        {% if result.team_score != None %}
+
+                          {{ result.team_score|floatformat:2 }}
+
+                        {% else %}
+
+                          <span class="text-danger">
+                            미입력
+                          </span>
+
+                        {% endif %}
+
+
+                      </td>
+
+
+
+                      <!-- ==================================
+                           개인 평가
+                      =================================== -->
+                      <td>
+
+
+                        {% if result.individual_score != None %}
+
+                          {{ result.individual_score|floatformat:2 }}
+
+                        {% else %}
+
+                          <span class="text-danger">
+                            미입력
+                          </span>
+
+                        {% endif %}
+
+
+                      </td>
+
+
+
+                      <!-- ==================================
+                           선생님 평가
+                      =================================== -->
+                      <td>
+
+
+                        {% if result.teacher_score != None %}
+
+                          {{ result.teacher_score|floatformat:2 }}
+
+                        {% else %}
+
+                          <span class="text-danger">
+                            미입력
+                          </span>
+
+                        {% endif %}
+
+
+                      </td>
+
+
+
+                      <!-- ==================================
+                           최종 점수
+                      =================================== -->
+                      <td class="fw-bold">
+
+
+                        {% if result.final_score != None %}
+
+                          {{ result.final_score|floatformat:2 }}
+
+                        {% else %}
+
+                          -
+
+                        {% endif %}
+
+
+                      </td>
+
+
+
+                      <!-- ==================================
+                           등급
+                      =================================== -->
+                      <td>
+
+
+                        {% if result.grade == 'S' %}
+
+                          <span class="badge text-bg-primary fs-6">
+                            S
+                          </span>
+
+
+                        {% elif result.grade == 'A' %}
+
+                          <span class="badge text-bg-success fs-6">
+                            A
+                          </span>
+
+
+                        {% elif result.grade == 'B' %}
+
+                          <span class="badge text-bg-warning fs-6">
+                            B
+                          </span>
+
+
+                        {% elif result.grade == 'C' %}
+
+                          <span class="badge text-bg-secondary fs-6">
+                            C
+                          </span>
+
+
+                        {% else %}
+
+                          <span class="badge text-bg-light text-dark">
+                            미산정
+                          </span>
+
+
+                        {% endif %}
+
+
+                      </td>
+
+
+
+                      <!-- ==================================
+                           상태
+                      =================================== -->
+                      <td>
+
+
+                        {% if result.calculation_status == 'NORMAL' %}
+
+                          <span class="badge text-bg-success">
+                            계산 완료
+                          </span>
+
+
+                        {% elif result.calculation_status == 'FALLBACK' %}
+
+                          <span class="badge text-bg-info">
+                            예외 산정
+                          </span>
+
+
+                        {% else %}
+
+                          <span class="badge text-bg-warning">
+                            미산정
+                          </span>
+
+
+                        {% endif %}
+
+
+                      </td>
+
+
+                    </tr>
+
+
+                  {% empty %}
+
+
+                    <tr>
+
+                      <td
+                        colspan="9"
+                        class="text-center text-muted py-5"
+                      >
+
+                        현재 프로젝트에 학생 결과 데이터가 없습니다.
+
+                      </td>
+
+                    </tr>
+
+
+                  {% endfor %}
+
 
                 </tbody>
 
+
               </table>
 
+
             </div>
+
 
           </div>
 
 
-          <!-- 팀 결과 -->
+
+          <!-- ==================================
+               팀 결과
+          =================================== -->
           <div
             class="tab-pane fade"
             id="teamResult"
           >
 
-            <div class="d-flex justify-content-between align-items-center mb-3">
+
+            <div
+              class="
+                d-flex
+                justify-content-between
+                align-items-center
+                mb-3
+              "
+            >
+
 
               <div>
 
@@ -675,29 +1565,41 @@
                   팀 결과
                 </h5>
 
+
                 <p class="text-muted small mb-0">
-                  팀 평가 결과와 팀 석차를 확인합니다.
+
+                  학생 팀 평가와 선생님 팀 평가를 기준으로
+                  팀 결과를 표시합니다.
+
                 </p>
 
               </div>
 
+
               <span class="badge text-bg-secondary">
-                전체 5팀
+
+                전체 {{ total_teams|default:0 }}팀
+
               </span>
+
 
             </div>
 
 
+
             <div class="table-responsive">
+
 
               <table class="table table-hover align-middle">
 
+
                 <thead class="table-light">
+
 
                   <tr>
 
                     <th>
-                      팀 석차
+                      석차
                     </th>
 
                     <th>
@@ -705,7 +1607,7 @@
                     </th>
 
                     <th>
-                      구성원 수
+                      구성원
                     </th>
 
                     <th>
@@ -717,224 +1619,453 @@
                     </th>
 
                     <th>
-                      팀 점수
+                      팀 종합 점수
+                    </th>
+
+                    <th>
+                      상태
                     </th>
 
                   </tr>
 
+
                 </thead>
+
 
 
                 <tbody>
 
-                  <tr>
 
-                    <td>
-                      <span class="badge text-bg-warning">
-                        1위
-                      </span>
-                    </td>
-
-                    <td class="fw-semibold">
-                      2팀
-                    </td>
-
-                    <td>
-                      4명
-                    </td>
-
-                    <td>
-                      91.2
-                    </td>
-
-                    <td>
-                      95.0
-                    </td>
-
-                    <td class="fw-bold">
-                      93.4
-                    </td>
-
-                  </tr>
+                  {% for result in team_results %}
 
 
-                  <tr>
-
-                    <td>
-                      <span class="badge text-bg-secondary">
-                        2위
-                      </span>
-                    </td>
-
-                    <td class="fw-semibold">
-                      1팀
-                    </td>
-
-                    <td>
-                      4명
-                    </td>
-
-                    <td>
-                      88.4
-                    </td>
-
-                    <td>
-                      92.0
-                    </td>
-
-                    <td class="fw-bold">
-                      90.5
-                    </td>
-
-                  </tr>
+                    <tr
+                      {% if result.team_score == None %}
+                        class="table-warning"
+                      {% endif %}
+                    >
 
 
-                  <tr>
-
-                    <td>
-                      3위
-                    </td>
-
-                    <td class="fw-semibold">
-                      4팀
-                    </td>
-
-                    <td>
-                      4명
-                    </td>
-
-                    <td>
-                      86.8
-                    </td>
-
-                    <td>
-                      88.0
-                    </td>
-
-                    <td class="fw-bold">
-                      87.5
-                    </td>
-
-                  </tr>
+                      <!-- 석차 -->
+                      <td>
 
 
-                  <tr class="table-warning">
+                        {% if result.rank %}
 
-                    <td>
-                      -
-                    </td>
 
-                    <td class="fw-semibold">
-                      5팀
-                    </td>
+                          {% if result.rank == 1 %}
 
-                    <td>
-                      4명
-                    </td>
+                            <span class="badge text-bg-warning">
+                              1위
+                            </span>
 
-                    <td>
-                      90.1
-                    </td>
 
-                    <td class="text-danger">
-                      미입력
-                    </td>
+                          {% elif result.rank == 2 %}
 
-                    <td>
-                      -
-                    </td>
+                            <span class="badge text-bg-secondary">
+                              2위
+                            </span>
 
-                  </tr>
+
+                          {% else %}
+
+                            {{ result.rank }}위
+
+                          {% endif %}
+
+
+                        {% else %}
+
+                          -
+
+                        {% endif %}
+
+
+                      </td>
+
+
+
+                      <!-- 팀 -->
+                      <td class="fw-semibold">
+
+                        {{ result.team_name }}
+
+                      </td>
+
+
+
+                      <!-- 인원 -->
+                      <td>
+
+                        {{ result.member_count }}명
+
+                      </td>
+
+
+
+                      <!-- 학생 팀 평가 -->
+                      <td>
+
+
+                        {% if result.student_score != None %}
+
+                          {{ result.student_score|floatformat:2 }}
+
+                        {% else %}
+
+                          <span class="text-danger">
+                            미입력
+                          </span>
+
+                        {% endif %}
+
+
+                      </td>
+
+
+
+                      <!-- 선생님 평가 -->
+                      <td>
+
+
+                        {% if result.teacher_score != None %}
+
+                          {{ result.teacher_score|floatformat:2 }}
+
+                        {% else %}
+
+                          <span class="text-danger">
+                            미입력
+                          </span>
+
+                        {% endif %}
+
+
+                      </td>
+
+
+
+                      <!-- 팀 점수 -->
+                      <td class="fw-bold">
+
+
+                        {% if result.team_score != None %}
+
+                          {{ result.team_score|floatformat:2 }}
+
+                        {% else %}
+
+                          -
+
+                        {% endif %}
+
+
+                      </td>
+
+
+
+                      <!-- 상태 -->
+                      <td>
+
+
+                        {% if result.team_score != None %}
+
+                          <span class="badge text-bg-success">
+                            계산 완료
+                          </span>
+
+                        {% else %}
+
+                          <span class="badge text-bg-warning">
+                            계산 대기
+                          </span>
+
+                        {% endif %}
+
+
+                      </td>
+
+
+                    </tr>
+
+
+                  {% empty %}
+
+
+                    <tr>
+
+                      <td
+                        colspan="7"
+                        class="text-center text-muted py-5"
+                      >
+
+                        현재 프로젝트에 팀 결과 데이터가 없습니다.
+
+                      </td>
+
+                    </tr>
+
+
+                  {% endfor %}
+
 
                 </tbody>
 
+
               </table>
+
 
             </div>
 
+
+
+            <div class="alert alert-light border mt-3 mb-0">
+
+              <small class="text-muted">
+
+                현재 팀 종합 점수는
+                학생 팀 평가 점수와 선생님 팀 평가 점수의
+                평균값으로 계산됩니다.
+
+              </small>
+
+            </div>
+
+
           </div>
 
+
         </div>
+
 
       </div>
 
     </div>
 
 
-    <!-- 결과 공개 -->
+
+    <!-- ======================================
+         결과 공개
+    ======================================= -->
     <div class="card border-0 shadow-sm">
 
       <div class="card-body p-4">
 
+
         <div class="row g-4 align-items-center">
 
+
           <div class="col-lg-8">
+
 
             <h5 class="fw-bold mb-1">
               평가 결과 공개
             </h5>
 
-            <p class="text-muted small mb-0">
+
+            <p class="text-muted small mb-2">
+
               결과를 공개하면 학생이 리포트 화면에서
-              개인 점수와 팀 결과를 확인할 수 있습니다.
+              자신의 점수, 등급과 석차를 확인할 수 있습니다.
+
             </p>
 
+
+
+            {% if current_round.results_public %}
+
+              <span class="badge text-bg-success">
+                현재 공개 중
+              </span>
+
+            {% else %}
+
+              <span class="badge text-bg-secondary">
+                현재 비공개
+              </span>
+
+            {% endif %}
+
+
           </div>
+
 
 
           <div class="col-lg-4">
 
-            <div class="d-grid gap-2">
+
+            {% if current_round.results_public %}
+
+
+              <form
+                method="POST"
+                action="{% url 'admin_result_management' %}"
+              >
+
+
+                {% csrf_token %}
+
+
+                <input
+                  type="hidden"
+                  name="round_id"
+                  value="{{ current_round.round_id }}"
+                >
+
+
+                <input
+                  type="hidden"
+                  name="action"
+                  value="hide"
+                >
+
+
+                <div class="d-grid">
+
+                  <button
+                    type="submit"
+                    class="btn btn-outline-danger"
+                  >
+                    결과 비공개
+                  </button>
+
+                </div>
+
+
+              </form>
+
+
+
+            {% elif can_publish %}
+
 
               <button
-                class="btn btn-success"
+                type="button"
+                class="btn btn-success w-100"
                 data-bs-toggle="modal"
                 data-bs-target="#publishResultModal"
-                disabled
               >
                 결과 공개
               </button>
 
-              <small class="text-danger text-center">
-                미입력 평가가 있어 공개할 수 없습니다.
+
+
+            {% else %}
+
+
+              <button
+                type="button"
+                class="btn btn-secondary w-100"
+                disabled
+              >
+                결과 공개 불가
+              </button>
+
+
+              <small
+                class="
+                  text-danger
+                  d-block
+                  text-center
+                  mt-2
+                "
+              >
+
+                평가 종료 및 모든 평가 완료가 필요합니다.
+
               </small>
 
-            </div>
+
+            {% endif %}
+
 
           </div>
 
+
         </div>
+
 
       </div>
 
     </div>
 
-  </main>
 
 
-  <!-- 점수 계산 확인 모달 -->
-  <div
-    class="modal fade"
-    id="calculateModal"
-    tabindex="-1"
-  >
+  {% endif %}
 
-    <div class="modal-dialog modal-dialog-centered">
 
-      <div class="modal-content">
+</main>
+
+
+
+<!-- ==========================================
+     점수 다시 계산 Modal
+========================================== -->
+{% if current_round %}
+
+<div
+  class="modal fade"
+  id="calculateModal"
+  tabindex="-1"
+  aria-hidden="true"
+>
+
+
+  <div class="modal-dialog modal-dialog-centered">
+
+
+    <div class="modal-content">
+
+
+      <form
+        method="POST"
+        action="{% url 'admin_result_management' %}"
+      >
+
+
+        {% csrf_token %}
+
+
+        <input
+          type="hidden"
+          name="action"
+          value="recalculate"
+        >
+
+
+        <input
+          type="hidden"
+          name="round_id"
+          value="{{ current_round.round_id }}"
+        >
+
+
 
         <div class="modal-body p-5 text-center">
 
+
           <h4 class="fw-bold mb-3">
-            점수를 다시 계산하시겠습니까?
+            점수와 등급을 다시 계산하시겠습니까?
           </h4>
 
+
           <p class="text-muted mb-4">
-            현재 입력된 평가 데이터를 기준으로
-            최종 점수와 석차를 다시 계산합니다.
+
+            현재 데이터베이스에 입력된 평가 데이터를 기준으로
+            최종 점수, 등급, 석차를 다시 계산합니다.
+
           </p>
 
-          <div class="d-flex justify-content-center gap-2">
+
+
+          <div
+            class="
+              d-flex
+              justify-content-center
+              gap-2
+            "
+          >
+
 
             <button
               type="button"
@@ -944,48 +2075,98 @@
               취소
             </button>
 
+
             <button
-              type="button"
+              type="submit"
               class="btn btn-primary"
-              data-bs-dismiss="modal"
             >
               계산
             </button>
 
+
           </div>
+
 
         </div>
 
-      </div>
+
+      </form>
+
 
     </div>
 
   </div>
 
+</div>
 
-  <!-- 결과 공개 확인 모달 -->
-  <div
-    class="modal fade"
-    id="publishResultModal"
-    tabindex="-1"
-  >
 
-    <div class="modal-dialog modal-dialog-centered">
 
-      <div class="modal-content">
+<!-- ==========================================
+     결과 공개 Modal
+========================================== -->
+<div
+  class="modal fade"
+  id="publishResultModal"
+  tabindex="-1"
+  aria-hidden="true"
+>
+
+
+  <div class="modal-dialog modal-dialog-centered">
+
+
+    <div class="modal-content">
+
+
+      <form
+        method="POST"
+        action="{% url 'admin_result_management' %}"
+      >
+
+
+        {% csrf_token %}
+
+
+        <input
+          type="hidden"
+          name="action"
+          value="publish"
+        >
+
+
+        <input
+          type="hidden"
+          name="round_id"
+          value="{{ current_round.round_id }}"
+        >
+
+
 
         <div class="modal-body p-5 text-center">
+
 
           <h4 class="fw-bold mb-3">
             평가 결과를 공개하시겠습니까?
           </h4>
 
+
           <p class="text-muted mb-4">
-            공개 후 학생들은 자신의 점수와 석차를
-            확인할 수 있습니다.
+
+            공개 후 학생들은
+            자신의 점수, 등급, 석차를 확인할 수 있습니다.
+
           </p>
 
-          <div class="d-flex justify-content-center gap-2">
+
+
+          <div
+            class="
+              d-flex
+              justify-content-center
+              gap-2
+            "
+          >
+
 
             <button
               type="button"
@@ -995,28 +2176,94 @@
               취소
             </button>
 
+
             <button
-              type="button"
+              type="submit"
               class="btn btn-success"
-              data-bs-dismiss="modal"
             >
               결과 공개
             </button>
 
+
           </div>
+
 
         </div>
 
-      </div>
+
+      </form>
+
 
     </div>
 
   </div>
 
+</div>
 
-  <script
-    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
-  ></script>
+{% endif %}
+
+
+
+<!-- ==========================================
+     Bootstrap
+========================================== -->
+<script
+  src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+>
+</script>
+
+
+
+<!-- ==========================================
+     평가 회차 변경
+========================================== -->
+<script>
+
+document.addEventListener(
+  "DOMContentLoaded",
+  function () {
+
+
+    const roundSelect =
+      document.getElementById(
+        "roundSelect"
+      );
+
+
+    if (!roundSelect) {
+
+      return;
+
+    }
+
+
+    roundSelect.addEventListener(
+      "change",
+      function () {
+
+
+        const roundId =
+          this.value;
+
+
+        window.location.href =
+          "{% url 'admin_result_management' %}"
+          + "?round_id="
+          + encodeURIComponent(
+              roundId
+            );
+
+
+      }
+    );
+
+
+  }
+);
+
+</script>
+
 
 </body>
+
 </html>
