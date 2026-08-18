@@ -5,6 +5,15 @@ from django.shortcuts import render, redirect
 from .models import Student, Teacher
 from .decorators import student_required, teacher_required
 
+from teams.models import Team, TeamMember
+
+from evaluations.models import (
+    Project,
+    EvaluationRound,
+    TeamEvaluationScore,
+    IndividualEvaluationScore,
+)
+
 
 # ==========================================
 # 1. 로그인
@@ -28,17 +37,16 @@ def login_view(request):
             student.password
         ):
 
-            # 로그인한 학생 정보를 세션에 저장
+            # 로그인 학생 정보 세션 저장
             request.session['user_type'] = 'STUDENT'
             request.session['student_id'] = student.student_id
             request.session['user_name'] = student.name
 
-            # 학생 홈으로 이동
             return redirect('student_home')
 
 
         # ----------------------------------
-        # 튜터 계정 확인
+        # 선생님 계정 확인
         # ----------------------------------
         teacher = Teacher.objects.filter(
             login_id=login_id
@@ -49,12 +57,11 @@ def login_view(request):
             teacher.password
         ):
 
-            # 로그인한 튜터 정보를 세션에 저장
+            # 로그인 선생님 정보 세션 저장
             request.session['user_type'] = 'TEACHER'
             request.session['teacher_id'] = teacher.teacher_id
             request.session['user_name'] = teacher.name
 
-            # 관리자 대시보드로 이동
             return redirect('admin_dashboard')
 
 
@@ -69,8 +76,6 @@ def login_view(request):
             }
         )
 
-
-    # GET 요청일 경우 로그인 화면 출력
     return render(
         request,
         'members/login.html'
@@ -95,7 +100,6 @@ def signup_view(request):
 
     if request.method == 'POST':
 
-        # HTML에서 입력한 데이터 가져오기
         login_id = request.POST.get('login_id')
         password = request.POST.get('password')
         password_confirm = request.POST.get('password_confirm')
@@ -107,7 +111,7 @@ def signup_view(request):
 
 
         # ----------------------------------
-        # 필수 입력값 확인
+        # 필수 입력 확인
         # ----------------------------------
         if not login_id or not password or not name:
 
@@ -121,7 +125,7 @@ def signup_view(request):
 
 
         # ----------------------------------
-        # 비밀번호 / 비밀번호 확인 비교
+        # 비밀번호 확인
         # ----------------------------------
         if password != password_confirm:
 
@@ -135,7 +139,7 @@ def signup_view(request):
 
 
         # ----------------------------------
-        # 학생 아이디 중복 확인
+        # 학생 아이디 중복
         # ----------------------------------
         if Student.objects.filter(
             login_id=login_id
@@ -151,7 +155,7 @@ def signup_view(request):
 
 
         # ----------------------------------
-        # 튜터 아이디와도 중복 확인
+        # 선생님 아이디와도 중복 방지
         # ----------------------------------
         if Teacher.objects.filter(
             login_id=login_id
@@ -167,13 +171,10 @@ def signup_view(request):
 
 
         # ----------------------------------
-        # 새로운 학생 생성
+        # 학생 DB 저장
         # ----------------------------------
         Student.objects.create(
-
             login_id=login_id,
-            # 비밀번호는 평문으로 저장하지 않고
-            # Django 방식으로 암호화해서 저장
             password=make_password(password),
             name=name,
             email=email or None,
@@ -181,17 +182,16 @@ def signup_view(request):
             slack_id=slack_id or None
         )
 
+
+        # 회원가입 완료 메시지
         messages.success(
-             request,
+            request,
             f'환영합니다, {name}님! 회원가입이 완료되었습니다.'
-)
-        # ----------------------------------
-        # 회원가입 완료
-        # ----------------------------------
+        )
+
         return redirect('login')
 
 
-    # GET 요청일 경우 회원가입 화면 출력
     return render(
         request,
         'members/signup.html'
@@ -203,14 +203,6 @@ def signup_view(request):
 # ==========================================
 @teacher_required
 def admin_dashboard_view(request):
-
-    # 로그인하지 않은 경우
-    if not request.session.get('user_type'):
-        return redirect('login')
-
-    # 학생이 관리자 페이지에 접근한 경우
-    if request.session.get('user_type') != 'TEACHER':
-        return redirect('student_home')
 
     return render(
         request,
@@ -227,26 +219,252 @@ def admin_dashboard_view(request):
 @student_required
 def student_home_view(request):
 
-    # 로그인하지 않은 경우
-    if not request.session.get('user_type'):
-        return redirect('login')
+    # ==========================================
+    # 1. 로그인 학생 ID
+    # ==========================================
+    student_id = request.session.get(
+        'student_id'
+    )
 
-    # 관리자가 학생 페이지에 접근한 경우
-    if request.session.get('user_type') != 'STUDENT':
-        return redirect('admin_dashboard')
 
-    student_id = request.session.get('student_id')
-
+    # ==========================================
+    # 2. 학생 정보 조회
+    # ==========================================
     student = Student.objects.filter(
         student_id=student_id
     ).first()
 
+
+    # ==========================================
+    # 3. 기본값
+    # ==========================================
+    team = None
+    team_students = []
+    project = None
+    current_round = None
+
+    team_target_count = 0
+    team_completed_count = 0
+    team_progress = 0
+
+    individual_target_count = 0
+    individual_completed_count = 0
+    individual_progress = 0
+
+    overall_progress = 0
+
+
+    # ==========================================
+    # 4. 학생의 팀 배정 조회
+    # ==========================================
+    team_member = TeamMember.objects.filter(
+        student_id=student_id
+    ).first()
+
+
+    # ==========================================
+    # 5. 팀에 배정된 학생
+    # ==========================================
+    if team_member:
+
+        # ----------------------------------
+        # 현재 학생의 팀
+        # ----------------------------------
+        team = Team.objects.filter(
+            team_id=team_member.team_id
+        ).first()
+
+
+        # ----------------------------------
+        # 같은 팀 학생 ID
+        # ----------------------------------
+        team_student_ids = TeamMember.objects.filter(
+            team_id=team_member.team_id
+        ).values_list(
+            'student_id',
+            flat=True
+        )
+
+
+        # ----------------------------------
+        # 같은 팀 실제 학생 정보
+        # ----------------------------------
+        team_students = Student.objects.filter(
+            student_id__in=team_student_ids
+        ).order_by(
+            'student_id'
+        )
+
+
+        # ======================================
+        # 6. 프로젝트 조회
+        # ======================================
+        if team:
+
+            project = Project.objects.filter(
+                project_id=team.project_id
+            ).first()
+
+
+            # ==================================
+            # 7. 현재 평가 회차 조회
+            # IN_PROGRESS 우선
+            # 없으면 READY
+            # ==================================
+            current_round = EvaluationRound.objects.filter(
+                project_id=team.project_id,
+                status='IN_PROGRESS'
+            ).order_by(
+                '-round_id'
+            ).first()
+
+
+            if not current_round:
+
+                current_round = EvaluationRound.objects.filter(
+                    project_id=team.project_id,
+                    status='READY'
+                ).order_by(
+                    '-round_id'
+                ).first()
+
+
+        # ======================================
+        # 8. 평가 진행률 계산
+        # ======================================
+        if current_round and team:
+
+            # ----------------------------------
+            # 팀 평가 대상 수
+            # 현재 프로젝트의 다른 팀 전체
+            # ----------------------------------
+            team_target_count = Team.objects.filter(
+                project_id=team.project_id
+            ).exclude(
+                team_id=team.team_id
+            ).count()
+
+
+            # ----------------------------------
+            # 실제 평가한 팀 수
+            # 같은 팀에 대해 여러 문항이 있어도
+            # target_team_id 기준 DISTINCT
+            # ----------------------------------
+            team_completed_count = (
+                TeamEvaluationScore.objects.filter(
+                    round_id=current_round.round_id,
+                    evaluator_student_id=student_id
+                )
+                .values(
+                    'target_team_id'
+                )
+                .distinct()
+                .count()
+            )
+
+
+            # ----------------------------------
+            # 팀 평가 진행률
+            # ----------------------------------
+            if team_target_count > 0:
+
+                team_progress = round(
+                    team_completed_count
+                    / team_target_count
+                    * 100
+                )
+
+
+            # ----------------------------------
+            # 개인 평가 대상 수
+            # 본인 제외 같은 팀원
+            # ----------------------------------
+            individual_target_count = (
+                team_students.exclude(
+                    student_id=student_id
+                ).count()
+            )
+
+
+            # ----------------------------------
+            # 실제 평가한 팀원 수
+            # 같은 사람에 대해 여러 문항이 있어도
+            # target_student_id 기준 DISTINCT
+            # ----------------------------------
+            individual_completed_count = (
+                IndividualEvaluationScore.objects.filter(
+                    round_id=current_round.round_id,
+                    evaluator_student_id=student_id
+                )
+                .values(
+                    'target_student_id'
+                )
+                .distinct()
+                .count()
+            )
+
+
+            # ----------------------------------
+            # 개인 평가 진행률
+            # ----------------------------------
+            if individual_target_count > 0:
+
+                individual_progress = round(
+                    individual_completed_count
+                    / individual_target_count
+                    * 100
+                )
+
+
+            # ----------------------------------
+            # 전체 평가 진행률
+            # 팀 평가 + 개인 평가 단순 평균
+            # ----------------------------------
+            overall_progress = round(
+                (
+                    team_progress
+                    + individual_progress
+                )
+                / 2
+            )
+
+
+    # ==========================================
+    # 9. Template 전달 데이터
+    # ==========================================
+    context = {
+
+        # 학생
+        'student': student,
+
+        # 팀
+        'team': team,
+        'team_students': team_students,
+        'has_team': team is not None,
+
+        # 프로젝트 / 평가 회차
+        'project': project,
+        'current_round': current_round,
+
+        # 팀 평가
+        'team_target_count': team_target_count,
+        'team_completed_count': team_completed_count,
+        'team_progress': team_progress,
+
+        # 개인 평가
+        'individual_target_count': individual_target_count,
+        'individual_completed_count': individual_completed_count,
+        'individual_progress': individual_progress,
+
+        # 전체 진행률
+        'overall_progress': overall_progress,
+    }
+
+
     return render(
         request,
         'members/student_home.html',
-        {
-            'student': student
-        }
+        context
     )
 
 
@@ -270,5 +488,4 @@ def logout_view(request):
     # 현재 로그인 세션 전체 삭제
     request.session.flush()
 
-    # 로그인 화면으로 이동
     return redirect('login')

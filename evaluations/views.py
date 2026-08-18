@@ -1,18 +1,21 @@
+from django.contrib import messages
 from django.shortcuts import render, redirect
 
 from members.decorators import student_required, teacher_required
+from members.models import Student
+
+from teams.models import Team, TeamMember
+
+from .models import (
+    EvaluationRound,
+    EvaluationQuestion,
+    TeamEvaluationScore,
+    IndividualEvaluationScore,
+)
 
 
 # ==========================================
-# 1. 관리자 - 평가 회차 관리
-# ==========================================
-# 튜터가 전체 평가 리스트를 확인하고
-# 새로운 평가 회차(프로젝트)를 생성하는 진입점.
-#
-# 추후:
-# 시작일 / 종료일에 따른 평가 상태
-# READY / IN_PROGRESS / COMPLETED 등의
-# 상태 판별 및 변경 로직 추가 예정
+# 1. 관리자 - 평가 회차
 # ==========================================
 @teacher_required
 def admin_evaluation_round_view(request):
@@ -24,14 +27,7 @@ def admin_evaluation_round_view(request):
 
 
 # ==========================================
-# 2. 관리자 - 평가 문항 관리
-# ==========================================
-# 튜터가 새 회차 생성 시
-# 팀 평가 / 개인 평가 문항을 설정하는 화면.
-#
-# 추후:
-# READY 상태에서만 문항
-# 추가 / 수정 / 삭제 가능하도록 구현
+# 2. 관리자 - 평가 문항
 # ==========================================
 @teacher_required
 def admin_evaluation_questions_view(request):
@@ -45,13 +41,6 @@ def admin_evaluation_questions_view(request):
 # ==========================================
 # 3. 관리자 - 평가 진행 현황
 # ==========================================
-# 튜터가 특정 평가의 진행률과
-# 미제출자 명단을 확인하는 화면.
-#
-# 추후:
-# 전체 인원 대비
-# 팀 평가 / 개인 평가 제출률 계산
-# ==========================================
 @teacher_required
 def admin_teacher_evaluation_view(request):
 
@@ -62,14 +51,7 @@ def admin_teacher_evaluation_view(request):
 
 
 # ==========================================
-# 4. 관리자 - 평가 결과 관리
-# ==========================================
-# 튜터가 수강생별 평가 결과와
-# 최종 점수 등을 확인하는 화면.
-#
-# 추후:
-# 최종 점수 / 석차 계산 및
-# 결과 공개 기능 추가
+# 4. 관리자 - 평가 결과
 # ==========================================
 @teacher_required
 def admin_result_management_view(request):
@@ -83,67 +65,340 @@ def admin_result_management_view(request):
 # ==========================================
 # 5. 학생 - 팀 평가
 # ==========================================
-# 학생이 다른 팀을 평가하는 화면.
-#
-# 추후:
-# - 본인 팀 평가 금지
-# - 이미 평가한 팀 중복 평가 금지
-# - 평가 문항 DB 조회
-# - 평가 결과 DB 저장
-# ==========================================
 @student_required
 def team_eval_list_view(request):
 
-    # ----------------------------------
+    # ======================================
+    # 로그인 학생
+    # ======================================
+    student_id = request.session.get(
+        'student_id'
+    )
+
+    student = Student.objects.filter(
+        student_id=student_id
+    ).first()
+
+
+    # ======================================
+    # 학생 팀 배정
+    # ======================================
+    team_member = TeamMember.objects.filter(
+        student_id=student_id
+    ).first()
+
+
+    if not team_member:
+
+        messages.error(
+            request,
+            '현재 소속된 팀이 없습니다.'
+        )
+
+        return redirect(
+            'student_home'
+        )
+
+
+    # ======================================
+    # 현재 학생 팀
+    # ======================================
+    my_team = Team.objects.filter(
+        team_id=team_member.team_id
+    ).first()
+
+
+    if not my_team:
+
+        messages.error(
+            request,
+            '팀 정보를 찾을 수 없습니다.'
+        )
+
+        return redirect(
+            'student_home'
+        )
+
+
+    # ======================================
+    # 현재 평가 회차
+    # ======================================
+    current_round = EvaluationRound.objects.filter(
+        project_id=my_team.project_id,
+        status='IN_PROGRESS'
+    ).order_by(
+        '-round_id'
+    ).first()
+
+
+    # 평가 진행 중인 회차가 없는 경우
+    if not current_round:
+
+        messages.warning(
+            request,
+            '현재 진행 중인 평가가 없습니다.'
+        )
+
+        return redirect(
+            'student_home'
+        )
+
+
+    # ======================================
+    # 팀 평가 문항
+    # ======================================
+    questions = EvaluationQuestion.objects.filter(
+        round_id=current_round.round_id,
+        question_type='TEAM'
+    ).order_by(
+        'display_order'
+    )
+
+
+    # ======================================
+    # 평가 대상 팀
+    #
+    # 같은 프로젝트
+    # + 자기 팀 제외
+    # ======================================
+    target_teams = Team.objects.filter(
+        project_id=my_team.project_id
+    ).exclude(
+        team_id=my_team.team_id
+    ).order_by(
+        'team_id'
+    )
+
+
+    # ======================================
+    # 이미 평가한 팀
+    # ======================================
+    completed_team_ids = list(
+        TeamEvaluationScore.objects.filter(
+            round_id=current_round.round_id,
+            evaluator_student_id=student_id
+        ).values_list(
+            'target_team_id',
+            flat=True
+        ).distinct()
+    )
+
+
+    # ======================================
     # POST
     # 평가 제출
-    # ----------------------------------
+    # ======================================
     if request.method == 'POST':
 
-        # 현재는 DB 저장 전 테스트 단계
-        print(
-            "넘어온 팀 평가 데이터:",
-            request.POST
+        target_team_id = request.POST.get(
+            'target_team_id'
         )
+
+
+        # ----------------------------------
+        # 대상 팀 값 확인
+        # ----------------------------------
+        if not target_team_id:
+
+            messages.error(
+                request,
+                '평가할 팀을 선택해주세요.'
+            )
+
+            return redirect(
+                'team_eval_list'
+            )
+
+
+        try:
+
+            target_team_id = int(
+                target_team_id
+            )
+
+        except (TypeError, ValueError):
+
+            messages.error(
+                request,
+                '잘못된 팀 정보입니다.'
+            )
+
+            return redirect(
+                'team_eval_list'
+            )
+
+
+        # ----------------------------------
+        # 자기 팀 평가 방지
+        # ----------------------------------
+        if target_team_id == my_team.team_id:
+
+            messages.error(
+                request,
+                '자신의 팀은 평가할 수 없습니다.'
+            )
+
+            return redirect(
+                'team_eval_list'
+            )
+
+
+        # ----------------------------------
+        # 다른 프로젝트 팀 평가 방지
+        # ----------------------------------
+        target_team = Team.objects.filter(
+            team_id=target_team_id,
+            project_id=my_team.project_id
+        ).first()
+
+
+        if not target_team:
+
+            messages.error(
+                request,
+                '평가할 수 없는 팀입니다.'
+            )
+
+            return redirect(
+                'team_eval_list'
+            )
+
+
+        # ----------------------------------
+        # 중복 평가 방지
+        # ----------------------------------
+        already_evaluated = TeamEvaluationScore.objects.filter(
+            round_id=current_round.round_id,
+            evaluator_student_id=student_id,
+            target_team_id=target_team_id
+        ).exists()
+
+
+        if already_evaluated:
+
+            messages.warning(
+                request,
+                '이미 평가한 팀입니다.'
+            )
+
+            return redirect(
+                'team_eval_list'
+            )
+
+
+        # ======================================
+        # 모든 문항 점수 검증
+        # ======================================
+        score_data = []
+
+
+        for question in questions:
+
+            score_value = request.POST.get(
+                f'question_{question.question_id}'
+            )
+
+
+            # 문항 누락
+            if not score_value:
+
+                messages.error(
+                    request,
+                    '모든 평가 문항에 점수를 입력해주세요.'
+                )
+
+                return redirect(
+                    'team_eval_list'
+                )
+
+
+            try:
+
+                score_value = int(
+                    score_value
+                )
+
+            except ValueError:
+
+                messages.error(
+                    request,
+                    '잘못된 점수가 입력되었습니다.'
+                )
+
+                return redirect(
+                    'team_eval_list'
+                )
+
+
+            # 1~5점 제한
+            if score_value < 1 or score_value > 5:
+
+                messages.error(
+                    request,
+                    '평가 점수는 1점부터 5점까지 입력할 수 있습니다.'
+                )
+
+                return redirect(
+                    'team_eval_list'
+                )
+
+
+            score_data.append(
+                (
+                    question,
+                    score_value
+                )
+            )
+
+
+        # ======================================
+        # DB 저장
+        # ======================================
+        for question, score_value in score_data:
+
+            TeamEvaluationScore.objects.create(
+
+                round_id=current_round.round_id,
+
+                evaluator_student_id=student_id,
+
+                target_team_id=target_team_id,
+
+                question_id=question.question_id,
+
+                score=score_value
+            )
+
+
+        messages.success(
+            request,
+            f'{target_team.team_name} 평가가 완료되었습니다.'
+        )
+
 
         return redirect(
             'team_eval_list'
         )
 
 
-    # ----------------------------------
-    # GET
-    # 테스트용 팀 평가 문항
-    # ----------------------------------
-    mock_questions = [
-        {
-            "id": 1,
-            "text": "프로젝트 목표를 명확히 이해하고 진행하였는가?"
-        },
-        {
-            "id": 2,
-            "text": "팀 간의 의견 조율이 원활하게 이루어졌는가?"
-        },
-        {
-            "id": 3,
-            "text": "결과물의 완성도가 요구사항을 충족하는가?"
-        },
-        {
-            "id": 4,
-            "text": "문제 발생 시 논리적인 해결책을 제시하였는가?"
-        },
-        {
-            "id": 5,
-            "text": "전반적인 협업 태도가 우수하였는가?"
-        },
-    ]
-
+    # ======================================
+    # HTML 전달
+    # ======================================
     context = {
-        # 현재는 테스트용 데이터
-        'target_team': 'Team 2',
 
-        'questions': mock_questions,
+        'student': student,
+
+        'my_team': my_team,
+
+        'current_round': current_round,
+
+        'questions': questions,
+
+        'target_teams': target_teams,
+
+        'completed_team_ids': completed_team_ids,
     }
+
 
     return render(
         request,
@@ -155,78 +410,17 @@ def team_eval_list_view(request):
 # ==========================================
 # 6. 학생 - 개인 평가
 # ==========================================
-# 학생이 자신과 같은 팀에 속한
-# 팀원들을 개인 평가하는 화면.
-#
-# 추후:
-# - 본인 제외
-# - 같은 팀원만 표시
-# - 중복 평가 금지
-# - 평가 결과 DB 저장
-# ==========================================
 @student_required
 def individual_eval_view(request):
 
-    # ----------------------------------
-    # POST
-    # 개인 평가 제출
-    # ----------------------------------
-    if request.method == 'POST':
-
-        print(
-            "개인 평가 넘어온 데이터:",
-            request.POST
-        )
-
-        return redirect(
-            'individual_eval'
-        )
-
-
-    # ----------------------------------
-    # GET
-    # 테스트용 개인 평가 문항
-    # ----------------------------------
-    mock_questions = [
-        {
-            "id": 1,
-            "text": "팀 프로젝트에 적극적으로 참여했나요?"
-        },
-        {
-            "id": 2,
-            "text": "맡은 역할과 업무를 책임감 있게 수행했나요?"
-        },
-        {
-            "id": 3,
-            "text": "팀원들과 원활하게 소통하고 협업했나요?"
-        },
-    ]
-
-    context = {
-        'questions': mock_questions,
-    }
-
     return render(
         request,
-        'evaluations/individual_eval.html',
-        context
+        'evaluations/individual_eval.html'
     )
 
 
 # ==========================================
-# 7. 학생 - 평가 결과 리포트
-# ==========================================
-# 평가 종료 후 학생이
-# 자신의 최종 평가 결과를 확인하는 화면.
-#
-# 최종 평가 가중치:
-# - 학생 팀 평가 30%
-# - 개인 평가 30%
-# - 선생님 평가 40%
-#
-# 추후:
-# 평가 결과가 공개 상태일 때만
-# 점수 / 석차 / 팀 결과 표시
+# 7. 학생 - 리포트
 # ==========================================
 @student_required
 def report_view(request):
