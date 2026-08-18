@@ -1,4 +1,4 @@
-from django.shortcuts import render
+from django.shortcuts import render, redirect
 
 # 튜터가 전체 평가 리스트를 확인하고 새로운 평가 회차(프로젝트)를 생성하는 진입점. 
 # (시작일/종료일에 따른 평가의 상태[진행 중, 완료]를 자동으로 업데이트하거나 판별하는 로직이 필요해.)
@@ -23,12 +23,46 @@ def admin_result_management_view(request):
 # 학생이 다른 팀을 평가하기 위해 대상 팀을 선택하고 문항에 답을 제출하는 화면. 
 # (자신의 팀은 평가 목록에서 제외하는 필터링과, 이미 평가한 팀을 중복 평가하지 못하도록 막는 검증(Validation) 로직이 들어가야 해.)
 def team_eval_list_view(request):
-    return render(request, 'evaluations/team_eval_list.html')
+    # POST 요청: 학생이 5점 척도 평가를 다 찍고 '제출'을 눌렀을 때
+    if request.method == 'POST':
+        # 아직 DB가 없으니 넘어온 데이터를 터미널에 출력해서 확인만 해봄
+        print("넘어온 평가 데이터:", request.POST)
+        # 제출 후 원래 화면으로 다시 렌더링
+        return render(request, 'evaluations/team_eval_list.html')
+
+    # GET 요청: 처음 화면에 진입했을 때 보여줄 가짜 문항 데이터
+    mock_questions = [
+        {"id": 1, "text": "프로젝트 목표를 명확히 이해하고 진행하였는가?"},
+        {"id": 2, "text": "팀 간의 의견 조율이 원활하게 이루어졌는가?"},
+        {"id": 3, "text": "결과물의 완성도가 요구사항을 충족하는가?"},
+        {"id": 4, "text": "문제 발생 시 논리적인 해결책을 제시하였는가?"},
+        {"id": 5, "text": "전반적인 협업 태도가 우수하였는가?"},
+    ]
+    
+    context = {
+        'target_team': 'Team 2', # 평가 대상 팀 (가짜 데이터)
+        'questions': mock_questions,
+    }
+    return render(request, 'evaluations/team_eval_list.html', context)
 
 # 학생이 자신과 같은 팀에 속한 팀원들을 개인 평가하는 화면. 
 # (본인을 제외한 팀원 목록만 노출해야 하며, 모달에서 제출된 각 문항의 1~5점 척도 점수들을 DB의 평가 결과 테이블에 정확히 맵핑해 저장해야 해.)
 def individual_eval_view(request):
-    return render(request, 'evaluations/individual_eval.html')
+    if request.method == 'POST':
+        print("개인 평가 넘어온 데이터:", request.POST)
+        # 데이터 처리 후 다시 개인 평가 페이지로 리다이렉트
+        return redirect('individual_eval')
+
+    # GET 요청이든 언제든 항상 문항 데이터를 context에 담아서 렌더링
+    mock_questions = [
+        {"id": 1, "text": "팀 프로젝트에 적극적으로 참여했나요?"},
+        {"id": 2, "text": "맡은 역할과 업무를 책임감 있게 수행했나요?"},
+        {"id": 3, "text": "팀원들과 원활하게 소통하고 협업했나요?"},
+    ]
+    context = {
+        'questions': mock_questions,
+    }
+    return render(request, 'evaluations/individual_eval.html', context)
 
 # 평가가 모두 종료된 후, 학생이 자신의 최종 합산 점수와 전체 석차를 확인하는 리포트 화면. 
 # (공개 설정이 된 평가 결과만 보여줘야 하며, [팀 점수 40% + 개인 점수 60%] 같은 가중치 수식 계산이 뷰 혹은 모델 단에서 수행되어야 해.)
