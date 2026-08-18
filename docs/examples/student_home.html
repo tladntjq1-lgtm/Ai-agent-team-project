@@ -1,0 +1,598 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!--
+  UI ID: UI-03
+  화면명: 학생 홈
+
+  주요 기능
+  - 현재 평가 회차 조회
+  - 현재 소속 팀 조회
+  - 팀원 조회
+  - 팀 평가 진행률
+  - 개인 평가 진행률
+  - 팀이 없는 경우 안내
+  -->
+
+  <title>참교육 | 학생 홈</title>
+
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  >
+</head>
+
+<body class="bg-light">
+
+  <!-- 상단 네비게이션 -->
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+
+    <div class="container">
+
+      <a
+        class="navbar-brand fw-bold"
+        href="student_home.html"
+      >
+        참교육
+      </a>
+
+      <button
+        class="navbar-toggler"
+        type="button"
+        data-bs-toggle="collapse"
+        data-bs-target="#studentNavbar"
+      >
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div
+        class="collapse navbar-collapse"
+        id="studentNavbar"
+      >
+
+        <ul class="navbar-nav ms-auto">
+
+          <li class="nav-item">
+            <a
+              class="nav-link active"
+              href="student_home.html"
+            >
+              홈
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="my_team.html"
+            >
+              내 팀
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="team_eval_list.html"
+            >
+              팀 평가
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="individual_eval.html"
+            >
+              개인 평가
+            </a>
+          </li>
+
+          <li class="nav-item">
+            <a
+              class="nav-link"
+              href="report.html"
+            >
+              리포트
+            </a>
+          </li>
+
+        </ul>
+
+      </div>
+
+    </div>
+
+  </nav>
+
+
+  <main class="container py-5">
+
+    <!-- 제목 -->
+    <div class="mb-4">
+
+      <h1 class="h3 fw-bold mb-1">
+        학생 홈
+      </h1>
+
+      <p class="text-muted mb-0">
+        현재 프로젝트와 평가 진행 상황을 확인하세요.
+      </p>
+
+    </div>
+
+
+    <!-- ======================================
+         CASE 1. 현재 소속 팀이 있는 경우
+    ======================================= -->
+
+    <section id="teamExists">
+
+      <!-- 기본 정보 -->
+      <div class="row g-3 mb-4">
+
+        <!-- 평가 회차 -->
+        <div class="col-md-6 col-xl-3">
+
+          <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body">
+
+              <p class="text-muted small mb-1">
+                현재 평가 회차
+              </p>
+
+              <h5 class="fw-bold">
+                2차 프로젝트 평가
+              </h5>
+
+              <span class="badge text-bg-success">
+                평가 진행 중
+              </span>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- 소속 팀 -->
+        <div class="col-md-6 col-xl-3">
+
+          <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body">
+
+              <p class="text-muted small mb-1">
+                현재 소속 팀
+              </p>
+
+              <h5 class="fw-bold">
+                3팀
+              </h5>
+
+              <p class="text-muted small mb-0">
+                참교육 프로젝트
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- 팀 평가 -->
+        <div class="col-md-6 col-xl-3">
+
+          <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body">
+
+              <p class="text-muted small mb-1">
+                팀 평가 진행률
+              </p>
+
+              <h5 class="fw-bold">
+                75%
+              </h5>
+
+              <div
+                class="progress"
+                role="progressbar"
+                aria-label="팀 평가 진행률"
+                aria-valuenow="75"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+
+                <div
+                  class="progress-bar"
+                  style="width: 75%"
+                >
+                </div>
+
+              </div>
+
+              <p class="text-muted small mt-2 mb-0">
+                3 / 4팀 완료
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+
+        <!-- 개인 평가 -->
+        <div class="col-md-6 col-xl-3">
+
+          <div class="card border-0 shadow-sm h-100">
+
+            <div class="card-body">
+
+              <p class="text-muted small mb-1">
+                개인 평가 진행률
+              </p>
+
+              <h5 class="fw-bold">
+                50%
+              </h5>
+
+              <div
+                class="progress"
+                role="progressbar"
+                aria-label="개인 평가 진행률"
+                aria-valuenow="50"
+                aria-valuemin="0"
+                aria-valuemax="100"
+              >
+
+                <div
+                  class="progress-bar"
+                  style="width: 50%"
+                >
+                </div>
+
+              </div>
+
+              <p class="text-muted small mt-2 mb-0">
+                2 / 4명 완료
+              </p>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- 전체 평가 진행률 -->
+      <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body p-4">
+
+          <div
+            class="d-flex justify-content-between align-items-center mb-3"
+          >
+
+            <div>
+
+              <h5 class="fw-bold mb-1">
+                전체 평가 진행률
+              </h5>
+
+              <p class="text-muted small mb-0">
+                팀 평가와 개인 평가 진행 상황입니다.
+              </p>
+
+            </div>
+
+            <h4 class="fw-bold text-primary mb-0">
+              63%
+            </h4>
+
+          </div>
+
+
+          <div
+            class="progress"
+            role="progressbar"
+            aria-label="전체 평가 진행률"
+            aria-valuenow="63"
+            aria-valuemin="0"
+            aria-valuemax="100"
+          >
+
+            <div
+              class="progress-bar"
+              style="width: 63%"
+            >
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- 팀원 -->
+      <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body p-4">
+
+          <div
+            class="d-flex justify-content-between align-items-center mb-4"
+          >
+
+            <div>
+
+              <h5 class="fw-bold mb-1">
+                소속 팀원
+              </h5>
+
+              <p class="text-muted small mb-0">
+                현재 3팀에 소속된 팀원입니다.
+              </p>
+
+            </div>
+
+            <a
+              href="my_team.html"
+              class="btn btn-outline-primary btn-sm"
+            >
+              내 팀 자세히 보기
+            </a>
+
+          </div>
+
+
+          <div class="row g-3">
+
+            <!-- 팀원 1 -->
+            <div class="col-md-6">
+
+              <div class="border rounded-3 p-3 bg-light">
+
+                <div class="fw-bold">
+                  김학생
+                </div>
+
+                <div class="text-muted small">
+                  student01@email.com
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- 팀원 2 -->
+            <div class="col-md-6">
+
+              <div class="border rounded-3 p-3 bg-light">
+
+                <div class="fw-bold">
+                  이학생
+                </div>
+
+                <div class="text-muted small">
+                  student02@email.com
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- 팀원 3 -->
+            <div class="col-md-6">
+
+              <div class="border rounded-3 p-3 bg-light">
+
+                <div class="fw-bold">
+                  박학생
+                </div>
+
+                <div class="text-muted small">
+                  student03@email.com
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <!-- 팀원 4 -->
+            <div class="col-md-6">
+
+              <div class="border rounded-3 p-3 bg-light">
+
+                <div class="fw-bold">
+                  최학생
+                </div>
+
+                <div class="text-muted small">
+                  student04@email.com
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- 바로가기 -->
+      <div class="row g-3">
+
+        <div class="col-md-6">
+
+          <div class="d-grid">
+
+            <a
+              href="team_eval_list.html"
+              class="btn btn-primary btn-lg"
+            >
+              팀 평가하러 가기
+            </a>
+
+          </div>
+
+        </div>
+
+
+        <div class="col-md-6">
+
+          <div class="d-grid">
+
+            <a
+              href="individual_eval.html"
+              class="btn btn-outline-primary btn-lg"
+            >
+              개인 평가하러 가기
+            </a>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- ======================================
+         CASE 2. 현재 소속 팀이 없는 경우
+         실제 구현 시 둘 중 하나만 출력
+    ======================================= -->
+
+    <section
+      id="noTeam"
+      class="mt-5"
+    >
+
+      <div class="mb-3">
+
+        <span class="badge text-bg-secondary">
+          팀 미배정 화면 예시
+        </span>
+
+      </div>
+
+
+      <div class="card border-0 shadow-sm mb-4">
+
+        <div class="card-body text-center py-5">
+
+          <h3 class="fw-bold mb-3">
+            현재 프로젝트가 시작되지 않았어요
+          </h3>
+
+          <p class="text-muted mb-4">
+            프로젝트와 팀 편성이 완료되면
+            현재 소속 팀과 평가 정보를 확인할 수 있습니다.
+          </p>
+
+          <a
+            href="report.html"
+            class="btn btn-outline-primary"
+          >
+            지난 평가 결과 보기
+          </a>
+
+        </div>
+
+      </div>
+
+
+      <!-- 지난 결과가 있는 경우 -->
+      <div class="card border-0 shadow-sm">
+
+        <div class="card-body p-4">
+
+          <h5 class="fw-bold mb-4">
+            지난 프로젝트 결과
+          </h5>
+
+          <div class="row g-3">
+
+            <div class="col-md-4">
+
+              <div class="border rounded-3 p-3">
+
+                <p class="text-muted small mb-1">
+                  프로젝트
+                </p>
+
+                <div class="fw-bold">
+                  1차 팀 프로젝트
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+              <div class="border rounded-3 p-3">
+
+                <p class="text-muted small mb-1">
+                  개인 석차
+                </p>
+
+                <div class="fw-bold">
+                  4위
+                </div>
+
+              </div>
+
+            </div>
+
+
+            <div class="col-md-4">
+
+              <div class="border rounded-3 p-3">
+
+                <p class="text-muted small mb-1">
+                  팀 석차
+                </p>
+
+                <div class="fw-bold">
+                  2위
+                </div>
+
+              </div>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+  </main>
+
+
+  <script
+    src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
+  ></script>
+
+</body>
+</html>
