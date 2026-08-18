@@ -15,6 +15,7 @@
   - 팀 평가 진행률
   - 개인 평가 진행률
   - 팀이 없는 경우 안내
+  - 로그아웃
   -->
 
   <title>참교육 | 학생 홈</title>
@@ -27,11 +28,14 @@
 
 <body class="bg-light">
 
-  <!-- 상단 네비게이션 -->
+  <!-- ==========================================
+       상단 네비게이션
+  =========================================== -->
   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
 
     <div class="container">
 
+      <!-- 로고 -->
       <a
         class="navbar-brand fw-bold"
         href="{% url 'student_home' %}"
@@ -39,65 +43,104 @@
         참교육
       </a>
 
+
+      <!-- 모바일 메뉴 버튼 -->
       <button
         class="navbar-toggler"
         type="button"
         data-bs-toggle="collapse"
         data-bs-target="#studentNavbar"
+        aria-controls="studentNavbar"
+        aria-expanded="false"
+        aria-label="메뉴 열기"
       >
         <span class="navbar-toggler-icon"></span>
       </button>
 
+
+      <!-- 메뉴 -->
       <div
         class="collapse navbar-collapse"
         id="studentNavbar"
       >
 
-        <ul class="navbar-nav ms-auto">
+        <ul class="navbar-nav ms-auto align-items-lg-center">
 
+          <!-- 홈 -->
           <li class="nav-item">
+
             <a
               class="nav-link active"
               href="{% url 'student_home' %}"
             >
               홈
             </a>
+
           </li>
 
+
+          <!-- 내 팀 -->
           <li class="nav-item">
+
             <a
               class="nav-link"
               href="{% url 'my_team' %}"
             >
               내 팀
             </a>
+
           </li>
 
+
+          <!-- 팀 평가 -->
           <li class="nav-item">
+
             <a
               class="nav-link"
               href="{% url 'team_eval_list' %}"
             >
               팀 평가
             </a>
+
           </li>
 
+
+          <!-- 개인 평가 -->
           <li class="nav-item">
+
             <a
               class="nav-link"
               href="{% url 'individual_eval' %}"
             >
               개인 평가
             </a>
+
           </li>
 
+
+          <!-- 리포트 -->
           <li class="nav-item">
+
             <a
               class="nav-link"
               href="{% url 'report' %}"
             >
               리포트
             </a>
+
+          </li>
+
+
+          <!-- 로그아웃 -->
+          <li class="nav-item ms-lg-3">
+
+            <a
+              class="btn btn-outline-light btn-sm"
+              href="{% url 'logout' %}"
+            >
+              로그아웃
+            </a>
+
           </li>
 
         </ul>
@@ -109,6 +152,9 @@
   </nav>
 
 
+  <!-- ==========================================
+       메인 화면
+  =========================================== -->
   <main class="container py-5">
 
     <!-- 제목 -->
@@ -128,11 +174,12 @@
     <!-- ======================================
          CASE 1. 현재 소속 팀이 있는 경우
     ======================================= -->
-
     <section id="teamExists">
+
 
       <!-- 기본 정보 -->
       <div class="row g-3 mb-4">
+
 
         <!-- 평가 회차 -->
         <div class="col-md-6 col-xl-3">
@@ -274,7 +321,9 @@
       </div>
 
 
-      <!-- 전체 평가 진행률 -->
+      <!-- ==========================================
+           전체 평가 진행률
+      =========================================== -->
       <div class="card border-0 shadow-sm mb-4">
 
         <div class="card-body p-4">
@@ -324,7 +373,9 @@
       </div>
 
 
-      <!-- 팀원 -->
+      <!-- ==========================================
+           팀원
+      =========================================== -->
       <div class="card border-0 shadow-sm mb-4">
 
         <div class="card-body p-4">
@@ -356,6 +407,7 @@
 
 
           <div class="row g-3">
+
 
             <!-- 팀원 1 -->
             <div class="col-md-6">
@@ -435,7 +487,9 @@
       </div>
 
 
-      <!-- 바로가기 -->
+      <!-- ==========================================
+           바로가기
+      =========================================== -->
       <div class="row g-3">
 
         <div class="col-md-6">
@@ -478,7 +532,6 @@
          CASE 2. 현재 소속 팀이 없는 경우
          실제 구현 시 둘 중 하나만 출력
     ======================================= -->
-
     <section
       id="noTeam"
       class="mt-5"
@@ -590,6 +643,7 @@
   </main>
 
 
+  <!-- Bootstrap JS -->
   <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
   ></script>

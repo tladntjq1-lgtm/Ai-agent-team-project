@@ -14,11 +14,19 @@ urlpatterns = [
     # --- [Members 앱] 계정 및 사용자 홈 라우팅 ---
     # 빈 주소('')로 접속했을 때 바로 로그인 화면으로 연결해. 진입점 역할을 하지.
     # name='login'은 이후 HTML 파일에서 {% url 'login' %}으로 이 주소를 찾아올 때 쓸 이름표야.
-    path('', members_views.student_home_view, name='student_home'),
+    
+    # 로그인
+    path('', members_views.login_view, name='login'),
+
+    # 로그아웃
+    path('logout/', members_views.logout_view, name='logout'),
     
     # 계정 찾기 화면
     path('account-find/', members_views.account_find_view, name='account_find'),
     
+    # 회원가입 화면
+    path('signup/',members_views.signup_view, name='signup'),
+
     # 튜터 로그인 시 보여줄 대시보드
     path('admin-dashboard/', members_views.admin_dashboard_view, name='admin_dashboard'),
     
