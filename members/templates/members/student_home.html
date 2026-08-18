@@ -4,20 +4,6 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
-  <!--
-  UI ID: UI-03
-  화면명: 학생 홈
-
-  주요 기능
-  - 현재 평가 회차 조회
-  - 현재 소속 팀 조회
-  - 팀원 조회
-  - 팀 평가 진행률
-  - 개인 평가 진행률
-  - 팀이 없는 경우 안내
-  - 로그아웃
-  -->
-
   <title>참교육 | 학생 홈</title>
 
   <link
@@ -35,7 +21,6 @@
 
     <div class="container">
 
-      <!-- 로고 -->
       <a
         class="navbar-brand fw-bold"
         href="{% url 'student_home' %}"
@@ -43,8 +28,6 @@
         참교육
       </a>
 
-
-      <!-- 모바일 메뉴 버튼 -->
       <button
         class="navbar-toggler"
         type="button"
@@ -57,8 +40,6 @@
         <span class="navbar-toggler-icon"></span>
       </button>
 
-
-      <!-- 메뉴 -->
       <div
         class="collapse navbar-collapse"
         id="studentNavbar"
@@ -66,81 +47,58 @@
 
         <ul class="navbar-nav ms-auto align-items-lg-center">
 
-          <!-- 홈 -->
           <li class="nav-item">
-
             <a
               class="nav-link active"
               href="{% url 'student_home' %}"
             >
               홈
             </a>
-
           </li>
 
-
-          <!-- 내 팀 -->
           <li class="nav-item">
-
             <a
               class="nav-link"
               href="{% url 'my_team' %}"
             >
               내 팀
             </a>
-
           </li>
 
-
-          <!-- 팀 평가 -->
           <li class="nav-item">
-
             <a
               class="nav-link"
               href="{% url 'team_eval_list' %}"
             >
               팀 평가
             </a>
-
           </li>
 
-
-          <!-- 개인 평가 -->
           <li class="nav-item">
-
             <a
               class="nav-link"
               href="{% url 'individual_eval' %}"
             >
               개인 평가
             </a>
-
           </li>
 
-
-          <!-- 리포트 -->
           <li class="nav-item">
-
             <a
               class="nav-link"
               href="{% url 'report' %}"
             >
               리포트
             </a>
-
           </li>
 
-
-          <!-- 로그아웃 -->
           <li class="nav-item ms-lg-3">
-
             <a
               class="btn btn-outline-light btn-sm"
               href="{% url 'logout' %}"
             >
               로그아웃
             </a>
-
           </li>
 
         </ul>
@@ -153,15 +111,15 @@
 
 
   <!-- ==========================================
-       메인 화면
+       메인
   =========================================== -->
   <main class="container py-5">
 
-    <!-- 제목 -->
+    <!-- 학생 인사 -->
     <div class="mb-4">
 
       <h1 class="h3 fw-bold mb-1">
-        학생 홈
+        {{ student.name }}님, 안녕하세요!
       </h1>
 
       <p class="text-muted mb-0">
@@ -171,17 +129,17 @@
     </div>
 
 
-    <!-- ======================================
-         CASE 1. 현재 소속 팀이 있는 경우
-    ======================================= -->
-    <section id="teamExists">
+    <!-- ==========================================
+         CASE 1. 팀이 있는 경우
+    =========================================== -->
+    {% if has_team %}
 
+    <section>
 
-      <!-- 기본 정보 -->
+      <!-- 기본 정보 카드 -->
       <div class="row g-3 mb-4">
 
-
-        <!-- 평가 회차 -->
+        <!-- 현재 평가 회차 -->
         <div class="col-md-6 col-xl-3">
 
           <div class="card border-0 shadow-sm h-100">
@@ -193,12 +151,44 @@
               </p>
 
               <h5 class="fw-bold">
-                2차 프로젝트 평가
+
+                {% if current_round %}
+                  {{ current_round.round_name }}
+                {% else %}
+                  현재 평가 없음
+                {% endif %}
+
               </h5>
 
-              <span class="badge text-bg-success">
-                평가 진행 중
-              </span>
+              {% if current_round %}
+
+                {% if current_round.status == 'IN_PROGRESS' %}
+
+                  <span class="badge text-bg-success">
+                    평가 진행 중
+                  </span>
+
+                {% elif current_round.status == 'READY' %}
+
+                  <span class="badge text-bg-warning">
+                    평가 준비 중
+                  </span>
+
+                {% else %}
+
+                  <span class="badge text-bg-secondary">
+                    {{ current_round.status }}
+                  </span>
+
+                {% endif %}
+
+              {% else %}
+
+                <span class="badge text-bg-secondary">
+                  평가 없음
+                </span>
+
+              {% endif %}
 
             </div>
 
@@ -207,7 +197,7 @@
         </div>
 
 
-        <!-- 소속 팀 -->
+        <!-- 현재 소속 팀 -->
         <div class="col-md-6 col-xl-3">
 
           <div class="card border-0 shadow-sm h-100">
@@ -219,11 +209,17 @@
               </p>
 
               <h5 class="fw-bold">
-                3팀
+                {{ team.team_name }}
               </h5>
 
               <p class="text-muted small mb-0">
-                참교육 프로젝트
+
+                {% if project %}
+                  {{ project.project_name }}
+                {% else %}
+                  프로젝트 없음
+                {% endif %}
+
               </p>
 
             </div>
@@ -233,7 +229,7 @@
         </div>
 
 
-        <!-- 팀 평가 -->
+        <!-- 팀 평가 진행률 -->
         <div class="col-md-6 col-xl-3">
 
           <div class="card border-0 shadow-sm h-100">
@@ -245,28 +241,29 @@
               </p>
 
               <h5 class="fw-bold">
-                75%
+                {{ team_progress }}%
               </h5>
 
               <div
                 class="progress"
                 role="progressbar"
-                aria-label="팀 평가 진행률"
-                aria-valuenow="75"
+                aria-valuenow="{{ team_progress }}"
                 aria-valuemin="0"
                 aria-valuemax="100"
               >
 
                 <div
                   class="progress-bar"
-                  style="width: 75%"
+                  style="width: {{ team_progress }}%"
                 >
                 </div>
 
               </div>
 
               <p class="text-muted small mt-2 mb-0">
-                3 / 4팀 완료
+                {{ team_completed_count }}
+                /
+                {{ team_target_count }}팀 완료
               </p>
 
             </div>
@@ -276,7 +273,7 @@
         </div>
 
 
-        <!-- 개인 평가 -->
+        <!-- 개인 평가 진행률 -->
         <div class="col-md-6 col-xl-3">
 
           <div class="card border-0 shadow-sm h-100">
@@ -288,28 +285,29 @@
               </p>
 
               <h5 class="fw-bold">
-                50%
+                {{ individual_progress }}%
               </h5>
 
               <div
                 class="progress"
                 role="progressbar"
-                aria-label="개인 평가 진행률"
-                aria-valuenow="50"
+                aria-valuenow="{{ individual_progress }}"
                 aria-valuemin="0"
                 aria-valuemax="100"
               >
 
                 <div
                   class="progress-bar"
-                  style="width: 50%"
+                  style="width: {{ individual_progress }}%"
                 >
                 </div>
 
               </div>
 
               <p class="text-muted small mt-2 mb-0">
-                2 / 4명 완료
+                {{ individual_completed_count }}
+                /
+                {{ individual_target_count }}명 완료
               </p>
 
             </div>
@@ -321,9 +319,7 @@
       </div>
 
 
-      <!-- ==========================================
-           전체 평가 진행률
-      =========================================== -->
+      <!-- 전체 평가 진행률 -->
       <div class="card border-0 shadow-sm mb-4">
 
         <div class="card-body p-4">
@@ -345,24 +341,22 @@
             </div>
 
             <h4 class="fw-bold text-primary mb-0">
-              63%
+              {{ overall_progress }}%
             </h4>
 
           </div>
 
-
           <div
             class="progress"
             role="progressbar"
-            aria-label="전체 평가 진행률"
-            aria-valuenow="63"
+            aria-valuenow="{{ overall_progress }}"
             aria-valuemin="0"
             aria-valuemax="100"
           >
 
             <div
               class="progress-bar"
-              style="width: 63%"
+              style="width: {{ overall_progress }}%"
             >
             </div>
 
@@ -373,9 +367,7 @@
       </div>
 
 
-      <!-- ==========================================
-           팀원
-      =========================================== -->
+      <!-- 팀원 -->
       <div class="card border-0 shadow-sm mb-4">
 
         <div class="card-body p-4">
@@ -391,7 +383,7 @@
               </h5>
 
               <p class="text-muted small mb-0">
-                현재 3팀에 소속된 팀원입니다.
+                현재 {{ team.team_name }}에 소속된 팀원입니다.
               </p>
 
             </div>
@@ -408,77 +400,51 @@
 
           <div class="row g-3">
 
+            {% for member in team_students %}
 
-            <!-- 팀원 1 -->
-            <div class="col-md-6">
+              <div class="col-md-6">
 
-              <div class="border rounded-3 p-3 bg-light">
+                <div class="border rounded-3 p-3 bg-light">
 
-                <div class="fw-bold">
-                  김학생
-                </div>
+                  <div class="fw-bold">
 
-                <div class="text-muted small">
-                  student01@email.com
-                </div>
+                    {{ member.name }}
 
-              </div>
+                    {% if member.student_id == student.student_id %}
 
-            </div>
+                      <span class="badge text-bg-primary ms-1">
+                        나
+                      </span>
 
+                    {% endif %}
 
-            <!-- 팀원 2 -->
-            <div class="col-md-6">
+                  </div>
 
-              <div class="border rounded-3 p-3 bg-light">
+                  <div class="text-muted small">
 
-                <div class="fw-bold">
-                  이학생
-                </div>
+                    {% if member.email %}
+                      {{ member.email }}
+                    {% else %}
+                      이메일 미등록
+                    {% endif %}
 
-                <div class="text-muted small">
-                  student02@email.com
-                </div>
+                  </div>
 
-              </div>
-
-            </div>
-
-
-            <!-- 팀원 3 -->
-            <div class="col-md-6">
-
-              <div class="border rounded-3 p-3 bg-light">
-
-                <div class="fw-bold">
-                  박학생
-                </div>
-
-                <div class="text-muted small">
-                  student03@email.com
                 </div>
 
               </div>
 
-            </div>
+            {% empty %}
 
+              <div class="col-12">
 
-            <!-- 팀원 4 -->
-            <div class="col-md-6">
-
-              <div class="border rounded-3 p-3 bg-light">
-
-                <div class="fw-bold">
-                  최학생
-                </div>
-
-                <div class="text-muted small">
-                  student04@email.com
+                <div class="alert alert-secondary mb-0">
+                  현재 등록된 팀원이 없습니다.
                 </div>
 
               </div>
 
-            </div>
+            {% endfor %}
 
           </div>
 
@@ -487,9 +453,7 @@
       </div>
 
 
-      <!-- ==========================================
-           바로가기
-      =========================================== -->
+      <!-- 평가 바로가기 -->
       <div class="row g-3">
 
         <div class="col-md-6">
@@ -506,7 +470,6 @@
           </div>
 
         </div>
-
 
         <div class="col-md-6">
 
@@ -528,27 +491,20 @@
     </section>
 
 
-    <!-- ======================================
-         CASE 2. 현재 소속 팀이 없는 경우
-         실제 구현 시 둘 중 하나만 출력
-    ======================================= -->
-    <section
-      id="noTeam"
-      class="mt-5"
-    >
+    <!-- ==========================================
+         CASE 2. 팀이 없는 경우
+    =========================================== -->
+    {% else %}
 
-      <div class="mb-3">
-
-        <span class="badge text-bg-secondary">
-          팀 미배정 화면 예시
-        </span>
-
-      </div>
-
+    <section>
 
       <div class="card border-0 shadow-sm mb-4">
 
         <div class="card-body text-center py-5">
+
+          <span class="badge text-bg-secondary mb-3">
+            팀 미배정
+          </span>
 
           <h3 class="fw-bold mb-3">
             현재 프로젝트가 시작되지 않았어요
@@ -570,80 +526,13 @@
 
       </div>
 
-
-      <!-- 지난 결과가 있는 경우 -->
-      <div class="card border-0 shadow-sm">
-
-        <div class="card-body p-4">
-
-          <h5 class="fw-bold mb-4">
-            지난 프로젝트 결과
-          </h5>
-
-          <div class="row g-3">
-
-            <div class="col-md-4">
-
-              <div class="border rounded-3 p-3">
-
-                <p class="text-muted small mb-1">
-                  프로젝트
-                </p>
-
-                <div class="fw-bold">
-                  1차 팀 프로젝트
-                </div>
-
-              </div>
-
-            </div>
-
-
-            <div class="col-md-4">
-
-              <div class="border rounded-3 p-3">
-
-                <p class="text-muted small mb-1">
-                  개인 석차
-                </p>
-
-                <div class="fw-bold">
-                  4위
-                </div>
-
-              </div>
-
-            </div>
-
-
-            <div class="col-md-4">
-
-              <div class="border rounded-3 p-3">
-
-                <p class="text-muted small mb-1">
-                  팀 석차
-                </p>
-
-                <div class="fw-bold">
-                  2위
-                </div>
-
-              </div>
-
-            </div>
-
-          </div>
-
-        </div>
-
-      </div>
-
     </section>
+
+    {% endif %}
 
   </main>
 
 
-  <!-- Bootstrap JS -->
   <script
     src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"
   ></script>
