@@ -1,6 +1,8 @@
 from django.contrib import messages
 from django.shortcuts import render, redirect
 from django.utils import timezone
+from django.urls import reverse
+from math import ceil
 
 from members.decorators import (
     student_required,
@@ -33,7 +35,6 @@ from .models import (
 # ==========================================
 def get_current_project():
 
-    # 진행 중인 평가 회차 프로젝트 우선
     current_round = EvaluationRound.objects.filter(
         status='IN_PROGRESS'
     ).order_by(
@@ -49,7 +50,6 @@ def get_current_project():
         if project:
             return project
 
-    # 진행 중인 프로젝트
     project = Project.objects.filter(
         status='IN_PROGRESS'
     ).order_by(
@@ -59,7 +59,6 @@ def get_current_project():
     if project:
         return project
 
-    # 최신 프로젝트
     return Project.objects.order_by(
         '-project_id'
     ).first()
@@ -112,7 +111,7 @@ def get_student_team(
 
 # ==========================================
 # 공통 함수 4
-# 최종 점수 + 등급 계산
+# 최종 점수 계산
 # ==========================================
 def calculate_final_grade(
     team_score,
@@ -123,7 +122,9 @@ def calculate_final_grade(
 
     # ======================================
     # 정상 계산
-    # 팀 30 + 개인 30 + 선생님 40
+    # 학생 팀 평가 30%
+    # 개인 평가 30%
+    # 선생님 평가 40%
     # ======================================
     if (
         team_score is not None
@@ -144,13 +145,11 @@ def calculate_final_grade(
 
         calculation_status = 'NORMAL'
 
-    # ======================================
-    # 일부 평가 누락
-    # ======================================
     else:
 
-        # 기본 정책:
-        # 누락된 평가가 있으면 미산정
+        # ==================================
+        # 일부 평가 누락 시 기본적으로 미산정
+        # ==================================
         if not allow_fallback:
 
             return {
@@ -223,29 +222,129 @@ def calculate_final_grade(
         calculation_status = 'FALLBACK'
 
     # ======================================
-    # 등급
+    # 등급은 여기서 결정하지 않음
+    # 전체 학생의 최종 점수를 계산한 뒤
+    # 상대평가 방식으로 별도 부여
     # ======================================
-    if final_score >= 90:
-
-        grade = 'S'
-
-    elif final_score >= 80:
-
-        grade = 'A'
-
-    elif final_score >= 70:
-
-        grade = 'B'
-
-    else:
-
-        grade = 'C'
-
     return {
         'final_score': final_score,
-        'grade': grade,
+        'grade': None,
         'status': calculation_status,
     }
+
+
+# ==========================================
+# 공통 함수 5
+# 상대평가 등급 부여
+#
+# S : 상위 20%
+# A : 다음 40%  -> 누적 상위 60%
+# B : 다음 30%  -> 누적 상위 90%
+# C : 하위 10%
+#
+# 동점자는 같은 석차 / 같은 등급
+# ==========================================
+def assign_relative_grades(
+    results,
+    score_key='final_score',
+):
+
+    # 최종 점수가 존재하는 학생만 상대평가 대상
+    valid_results = [
+        result
+        for result in results
+        if result.get(score_key) is not None
+    ]
+
+    # 점수 높은 순 정렬
+    valid_results.sort(
+        key=lambda x: x[score_key],
+        reverse=True
+    )
+
+    total_count = len(
+        valid_results
+    )
+
+    if total_count == 0:
+        return valid_results
+
+    # ======================================
+    # 등급 인원 기준
+    #
+    # 20명 기준
+    # S : 1 ~ 4위
+    # A : 5 ~ 12위
+    # B : 13 ~ 18위
+    # C : 19 ~ 20위
+    #
+    # 인원이 20명이 아니어도 자동 계산
+    # ======================================
+    s_cutoff = max(
+        1,
+        ceil(
+            total_count * 0.20
+        )
+    )
+
+    a_cutoff = max(
+        s_cutoff,
+        ceil(
+            total_count * 0.60
+        )
+    )
+
+    b_cutoff = max(
+        a_cutoff,
+        ceil(
+            total_count * 0.90
+        )
+    )
+
+    previous_score = None
+    previous_rank = 0
+
+    for index, result in enumerate(
+        valid_results,
+        start=1
+    ):
+
+        current_score = result[
+            score_key
+        ]
+
+        # ==================================
+        # 동점자 처리
+        # 같은 점수면 같은 석차 유지
+        # ==================================
+        if current_score != previous_score:
+
+            previous_rank = index
+
+        result['rank'] = previous_rank
+
+        # ==================================
+        # 상대평가 등급 결정
+        # ==================================
+        if previous_rank <= s_cutoff:
+
+            result['grade'] = 'S'
+
+        elif previous_rank <= a_cutoff:
+
+            result['grade'] = 'A'
+
+        elif previous_rank <= b_cutoff:
+
+            result['grade'] = 'B'
+
+        else:
+
+            result['grade'] = 'C'
+
+        previous_score = current_score
+
+    return valid_results
 
 
 # ==========================================
@@ -328,19 +427,12 @@ def admin_evaluation_round_view(request):
                 )
 
             EvaluationRound.objects.create(
-
                 project_id=project.project_id,
-
                 round_name=round_name,
-
                 start_date=start_date,
-
                 end_date=end_date,
-
                 status='READY',
-
                 results_public=False,
-
                 created_at=timezone.now()
             )
 
@@ -603,7 +695,9 @@ def admin_evaluation_questions_view(request):
 
             evaluation_round = (
                 EvaluationRound.objects
-                .order_by('-round_id')
+                .order_by(
+                    '-round_id'
+                )
                 .first()
             )
 
@@ -707,13 +801,9 @@ def admin_evaluation_questions_view(request):
             )
 
             EvaluationQuestion.objects.create(
-
                 round_id=evaluation_round.round_id,
-
                 question_type=question_type,
-
                 question_text=question_text,
-
                 display_order=display_order
             )
 
@@ -858,6 +948,9 @@ def admin_teacher_evaluation_view(request):
             'login'
         )
 
+    # ======================================
+    # 현재 진행 중인 평가 회차
+    # ======================================
     current_round = EvaluationRound.objects.filter(
         status='IN_PROGRESS'
     ).order_by(
@@ -872,25 +965,39 @@ def admin_teacher_evaluation_view(request):
             {
                 'current_round': None,
                 'project': None,
+
                 'teams': [],
                 'students': [],
+
+                'student_cards': [],
+                'team_student_groups': [],
+
                 'team_questions': [],
                 'individual_questions': [],
+
                 'completed_team_ids': [],
                 'completed_student_ids': [],
+
                 'team_count': 0,
                 'completed_team_count': 0,
                 'team_progress': 0,
+
                 'student_count': 0,
                 'completed_student_count': 0,
                 'individual_progress': 0,
             }
         )
 
+    # ======================================
+    # 프로젝트
+    # ======================================
     project = Project.objects.filter(
         project_id=current_round.project_id
     ).first()
 
+    # ======================================
+    # 프로젝트 팀
+    # ======================================
     teams = Team.objects.filter(
         project_id=current_round.project_id
     ).order_by(
@@ -904,6 +1011,9 @@ def admin_teacher_evaluation_view(request):
         )
     )
 
+    # ======================================
+    # 프로젝트 학생
+    # ======================================
     student_ids = (
         TeamMember.objects.filter(
             team_id__in=team_ids
@@ -921,6 +1031,9 @@ def admin_teacher_evaluation_view(request):
         'name'
     )
 
+    # ======================================
+    # 평가 문항
+    # ======================================
     team_questions = EvaluationQuestion.objects.filter(
         round_id=current_round.round_id,
         question_type='TEAM'
@@ -935,6 +1048,9 @@ def admin_teacher_evaluation_view(request):
         'display_order'
     )
 
+    # ======================================
+    # 평가 완료 팀
+    # ======================================
     completed_team_ids = list(
         TeacherTeamScore.objects.filter(
             round_id=current_round.round_id,
@@ -947,6 +1063,9 @@ def admin_teacher_evaluation_view(request):
         .distinct()
     )
 
+    # ======================================
+    # 평가 완료 학생
+    # ======================================
     completed_student_ids = list(
         TeacherIndividualScore.objects.filter(
             round_id=current_round.round_id,
@@ -959,12 +1078,110 @@ def admin_teacher_evaluation_view(request):
         .distinct()
     )
 
+    # ======================================
+    # 학생 + 소속 팀 정보
+    # ======================================
+    student_cards = []
+
+    for student in students:
+
+        team_member = TeamMember.objects.filter(
+            student_id=student.student_id,
+            team_id__in=team_ids
+        ).first()
+
+        student_team = None
+
+        if team_member:
+
+            student_team = Team.objects.filter(
+                team_id=team_member.team_id,
+                project_id=current_round.project_id
+            ).first()
+
+        student_cards.append(
+            {
+                'student':
+                    student,
+
+                'team':
+                    student_team,
+
+                'is_completed':
+                    (
+                        student.student_id
+                        in completed_student_ids
+                    ),
+            }
+        )
+
+    # ======================================
+    # 팀별 학생 그룹
+    # ======================================
+    team_student_groups = []
+
+    for team in teams:
+
+        group_members = [
+            item
+            for item in student_cards
+            if (
+                item['team']
+                and item['team'].team_id == team.team_id
+            )
+        ]
+
+        completed_member_count = sum(
+            1
+            for item in group_members
+            if item['is_completed']
+        )
+
+        member_count = len(
+            group_members
+        )
+
+        group_progress = (
+            round(
+                completed_member_count
+                / member_count
+                * 100
+            )
+            if member_count > 0
+            else 0
+        )
+
+        team_student_groups.append(
+            {
+                'team':
+                    team,
+
+                'members':
+                    group_members,
+
+                'member_count':
+                    member_count,
+
+                'completed_member_count':
+                    completed_member_count,
+
+                'progress':
+                    group_progress,
+            }
+        )
+
+    # ======================================
+    # POST
+    # ======================================
     if request.method == 'POST':
 
         evaluation_type = request.POST.get(
             'evaluation_type'
         )
 
+        # ==================================
+        # A. 선생님 팀 평가
+        # ==================================
         if evaluation_type == 'TEAM':
 
             target_team_id = request.POST.get(
@@ -1065,17 +1282,11 @@ def admin_teacher_evaluation_view(request):
             for question, score_value in score_data:
 
                 TeacherTeamScore.objects.create(
-
                     round_id=current_round.round_id,
-
                     teacher_id=teacher_id,
-
                     target_team_id=target_team_id,
-
                     question_id=question.question_id,
-
                     score=score_value,
-
                     created_at=timezone.now()
                 )
 
@@ -1088,12 +1299,19 @@ def admin_teacher_evaluation_view(request):
                 'admin_teacher_evaluation'
             )
 
+        # ==================================
+        # B. 선생님 학생 개인 평가
+        # ==================================
         elif evaluation_type == 'INDIVIDUAL':
 
             target_student_id = request.POST.get(
                 'target_student_id'
             )
 
+            # ----------------------------------
+            # 잘못된 학생 ID
+            # 개인 평가 탭 유지
+            # ----------------------------------
             try:
 
                 target_student_id = int(
@@ -1108,9 +1326,15 @@ def admin_teacher_evaluation_view(request):
                 )
 
                 return redirect(
-                    'admin_teacher_evaluation'
+                    reverse(
+                        'admin_teacher_evaluation'
+                    )
+                    + '?tab=individual'
                 )
 
+            # ----------------------------------
+            # 현재 프로젝트 학생인지 검증
+            # ----------------------------------
             target_student = students.filter(
                 student_id=target_student_id
             ).first()
@@ -1123,9 +1347,15 @@ def admin_teacher_evaluation_view(request):
                 )
 
                 return redirect(
-                    'admin_teacher_evaluation'
+                    reverse(
+                        'admin_teacher_evaluation'
+                    )
+                    + '?tab=individual'
                 )
 
+            # ----------------------------------
+            # 중복 평가 방지
+            # ----------------------------------
             if TeacherIndividualScore.objects.filter(
                 round_id=current_round.round_id,
                 teacher_id=teacher_id,
@@ -1138,9 +1368,15 @@ def admin_teacher_evaluation_view(request):
                 )
 
                 return redirect(
-                    'admin_teacher_evaluation'
+                    reverse(
+                        'admin_teacher_evaluation'
+                    )
+                    + '?tab=individual'
                 )
 
+            # ----------------------------------
+            # 평가 문항 점수 검증
+            # ----------------------------------
             score_data = []
 
             for question in individual_questions:
@@ -1163,7 +1399,10 @@ def admin_teacher_evaluation_view(request):
                     )
 
                     return redirect(
-                        'admin_teacher_evaluation'
+                        reverse(
+                            'admin_teacher_evaluation'
+                        )
+                        + '?tab=individual'
                     )
 
                 if not 1 <= score_value <= 5:
@@ -1174,7 +1413,10 @@ def admin_teacher_evaluation_view(request):
                     )
 
                     return redirect(
-                        'admin_teacher_evaluation'
+                        reverse(
+                            'admin_teacher_evaluation'
+                        )
+                        + '?tab=individual'
                     )
 
                 score_data.append(
@@ -1184,20 +1426,17 @@ def admin_teacher_evaluation_view(request):
                     )
                 )
 
+            # ----------------------------------
+            # DB 저장
+            # ----------------------------------
             for question, score_value in score_data:
 
                 TeacherIndividualScore.objects.create(
-
                     round_id=current_round.round_id,
-
                     teacher_id=teacher_id,
-
                     target_student_id=target_student_id,
-
                     question_id=question.question_id,
-
                     score=score_value,
-
                     created_at=timezone.now()
                 )
 
@@ -1206,11 +1445,23 @@ def admin_teacher_evaluation_view(request):
                 f'{target_student.name} 학생 평가가 완료되었습니다.'
             )
 
+            # ----------------------------------
+            # ★ 핵심
+            # 개인 평가 완료 후
+            # 학생 개인 평가 탭으로 복귀
+            # ----------------------------------
             return redirect(
-                'admin_teacher_evaluation'
+                reverse(
+                    'admin_teacher_evaluation'
+                )
+                + '?tab=individual'
             )
 
+    # ======================================
+    # 팀 평가 진행률
+    # ======================================
     team_count = teams.count()
+
     completed_team_count = len(
         completed_team_ids
     )
@@ -1225,7 +1476,11 @@ def admin_teacher_evaluation_view(request):
         else 0
     )
 
+    # ======================================
+    # 학생 평가 진행률
+    # ======================================
     student_count = students.count()
+
     completed_student_count = len(
         completed_student_ids
     )
@@ -1240,6 +1495,9 @@ def admin_teacher_evaluation_view(request):
         else 0
     )
 
+    # ======================================
+    # HTML
+    # ======================================
     return render(
         request,
         'evaluations/admin_teacher_evaluation.html',
@@ -1255,6 +1513,12 @@ def admin_teacher_evaluation_view(request):
 
             'students':
                 students,
+
+            'student_cards':
+                student_cards,
+
+            'team_student_groups':
+                team_student_groups,
 
             'team_questions':
                 team_questions,
@@ -1382,9 +1646,6 @@ def admin_result_management_view(request):
         student_ids
     )
 
-    # ======================================
-    # POST
-    # ======================================
     if request.method == 'POST':
 
         action = request.POST.get(
@@ -1603,16 +1864,12 @@ def admin_result_management_view(request):
         ).first()
 
         if not team_member:
-
             continue
 
         student_team = Team.objects.filter(
             team_id=team_member.team_id
         ).first()
 
-        # ==================================
-        # A. 학생 팀 평가
-        # ==================================
         team_scores = list(
             TeamEvaluationScore.objects.filter(
                 round_id=current_round.round_id,
@@ -1640,9 +1897,6 @@ def admin_result_management_view(request):
 
             team_score = None
 
-        # ==================================
-        # B. 개인 평가
-        # ==================================
         individual_scores = list(
             IndividualEvaluationScore.objects.filter(
                 round_id=current_round.round_id,
@@ -1670,9 +1924,6 @@ def admin_result_management_view(request):
 
             individual_score = None
 
-        # ==================================
-        # C. 선생님 평가
-        # ==================================
         teacher_scores = list(
             TeacherIndividualScore.objects.filter(
                 round_id=current_round.round_id,
@@ -1700,26 +1951,15 @@ def admin_result_management_view(request):
 
             teacher_score = None
 
-        # ==================================
-        # D. 최종 점수 + 등급
-        # ==================================
         grade_result = calculate_final_grade(
-
             team_score=team_score,
-
             individual_score=individual_score,
-
             teacher_score=teacher_score,
-
             allow_fallback=False,
         )
 
         final_score = grade_result[
             'final_score'
-        ]
-
-        grade = grade_result[
-            'grade'
         ]
 
         calculation_status = grade_result[
@@ -1769,11 +2009,13 @@ def admin_result_management_view(request):
                 'final_score':
                     final_score,
 
-                # 추가
                 'grade':
-                    grade,
+                    (
+                        '미산정'
+                        if final_score is None
+                        else None
+                    ),
 
-                # 추가
                 'calculation_status':
                     calculation_status,
 
@@ -1786,37 +2028,15 @@ def admin_result_management_view(request):
         )
 
     # ======================================
-    # 개인 석차
-    # 미산정 학생 제외
+    # 상대평가 등급 + 석차 부여
+    #
+    # S 20% / A 40% / B 30% / C 10%
     # ======================================
-    completed_student_results = [
-        result
-        for result in student_results
-        if result['final_score'] is not None
-    ]
-
-    completed_student_results.sort(
-        key=lambda x: x['final_score'],
-        reverse=True
+    completed_student_results = (
+        assign_relative_grades(
+            student_results
+        )
     )
-
-    previous_score = None
-    previous_rank = 0
-
-    for index, result in enumerate(
-        completed_student_results,
-        start=1
-    ):
-
-        if result['final_score'] != previous_score:
-
-            previous_rank = index
-
-        result['rank'] = previous_rank
-
-        previous_score = result[
-            'final_score'
-        ]
 
     student_results.sort(
         key=lambda x: (
@@ -1944,9 +2164,6 @@ def admin_result_management_view(request):
             }
         )
 
-    # ======================================
-    # 팀 석차
-    # ======================================
     completed_team_results = [
         result
         for result in team_results
@@ -2164,6 +2381,8 @@ def team_eval_list_view(request):
         'display_order'
     )
 
+    # BR-01
+    # 자기 팀 제외
     target_teams = Team.objects.filter(
         project_id=current_project.project_id
     ).exclude(
@@ -2183,6 +2402,45 @@ def team_eval_list_view(request):
         )
         .distinct()
     )
+
+    # ======================================
+    # 팀별 팀원 정보
+    # ======================================
+    target_team_cards = []
+
+    for team in target_teams:
+
+        member_student_ids = TeamMember.objects.filter(
+            team_id=team.team_id
+        ).values_list(
+            'student_id',
+            flat=True
+        )
+
+        members = Student.objects.filter(
+            student_id__in=member_student_ids
+        ).order_by(
+            'student_id'
+        )
+
+        target_team_cards.append(
+            {
+                'team':
+                    team,
+
+                'members':
+                    members,
+
+                'member_count':
+                    members.count(),
+
+                'is_completed':
+                    (
+                        team.team_id
+                        in completed_team_ids
+                    ),
+            }
+        )
 
     target_team_count = target_teams.count()
 
@@ -2250,6 +2508,7 @@ def team_eval_list_view(request):
                 'team_eval_list'
             )
 
+        # BR-05
         if TeamEvaluationScore.objects.filter(
             round_id=current_round.round_id,
             evaluator_student_id=student_id,
@@ -2259,6 +2518,17 @@ def team_eval_list_view(request):
             messages.warning(
                 request,
                 '이미 평가한 팀입니다.'
+            )
+
+            return redirect(
+                'team_eval_list'
+            )
+
+        if not questions.exists():
+
+            messages.error(
+                request,
+                '등록된 팀 평가 문항이 없습니다.'
             )
 
             return redirect(
@@ -2311,17 +2581,11 @@ def team_eval_list_view(request):
         for question, score_value in score_data:
 
             TeamEvaluationScore.objects.create(
-
                 round_id=current_round.round_id,
-
                 evaluator_student_id=student_id,
-
                 target_team_id=target_team_id,
-
                 question_id=question.question_id,
-
                 score=score_value,
-
                 created_at=timezone.now()
             )
 
@@ -2355,6 +2619,9 @@ def team_eval_list_view(request):
 
             'target_teams':
                 target_teams,
+
+            'target_team_cards':
+                target_team_cards,
 
             'completed_team_ids':
                 completed_team_ids,
@@ -2452,6 +2719,7 @@ def individual_eval_view(request):
         'display_order'
     )
 
+    # BR-02 / BR-03 / BR-04
     team_student_ids = TeamMember.objects.filter(
         team_id=my_team.team_id
     ).values_list(
@@ -2518,6 +2786,7 @@ def individual_eval_view(request):
                 'individual_eval'
             )
 
+        # BR-04
         if target_student_id == student_id:
 
             messages.error(
@@ -2529,6 +2798,7 @@ def individual_eval_view(request):
                 'individual_eval'
             )
 
+        # BR-02 / BR-03
         target_student = target_students.filter(
             student_id=target_student_id
         ).first()
@@ -2544,6 +2814,7 @@ def individual_eval_view(request):
                 'individual_eval'
             )
 
+        # BR-05
         if IndividualEvaluationScore.objects.filter(
             round_id=current_round.round_id,
             evaluator_student_id=student_id,
@@ -2605,17 +2876,11 @@ def individual_eval_view(request):
         for question, score_value in score_data:
 
             IndividualEvaluationScore.objects.create(
-
                 round_id=current_round.round_id,
-
                 evaluator_student_id=student_id,
-
                 target_student_id=target_student_id,
-
                 question_id=question.question_id,
-
                 score=score_value,
-
                 created_at=timezone.now()
             )
 
@@ -2863,13 +3128,9 @@ def report_view(request):
     # 최종 점수 + 등급
     # ======================================
     grade_result = calculate_final_grade(
-
         team_score=team_score,
-
         individual_score=individual_score,
-
         teacher_score=teacher_score,
-
         allow_fallback=False,
     )
 
@@ -2877,9 +3138,11 @@ def report_view(request):
         'final_score'
     ]
 
-    grade = grade_result[
-        'grade'
-    ]
+    grade = (
+        '미산정'
+        if final_score is None
+        else None
+    )
 
     calculation_status = grade_result[
         'status'
@@ -2917,7 +3180,6 @@ def report_view(request):
 
     # ======================================
     # 전체 학생 석차
-    # 미산정 학생은 제외
     # ======================================
     project_team_ids = list(
         Team.objects.filter(
@@ -2985,7 +3247,6 @@ def report_view(request):
             )
         )
 
-        # 미평가 영역 존재
         if (
             not target_team_scores
             or not target_individual_scores
@@ -3021,13 +3282,9 @@ def report_view(request):
         )
 
         target_result = calculate_final_grade(
-
             team_score=target_team_score,
-
             individual_score=target_individual_score,
-
             teacher_score=target_teacher_score,
-
             allow_fallback=False,
         )
 
@@ -3049,35 +3306,34 @@ def report_view(request):
             }
         )
 
-    ranking_data.sort(
-        key=lambda x: x['final_score'],
-        reverse=True
+    # ======================================
+    # 상대평가 등급 + 석차 부여
+    #
+    # S : 상위 20%
+    # A : 다음 40%
+    # B : 다음 30%
+    # C : 하위 10%
+    # ======================================
+    ranking_data = assign_relative_grades(
+        ranking_data
     )
 
-    previous_score = None
-    previous_rank = 0
     student_rank = None
 
-    for index, result in enumerate(
-        ranking_data,
-        start=1
-    ):
-
-        if result['final_score'] != previous_score:
-
-            previous_rank = index
+    for result in ranking_data:
 
         if result['student_id'] == student_id:
 
-            student_rank = previous_rank
+            student_rank = result[
+                'rank'
+            ]
 
-        previous_score = result[
-            'final_score'
-        ]
+            grade = result[
+                'grade'
+            ]
 
-    # ======================================
-    # HTML
-    # ======================================
+            break
+
     return render(
         request,
         'evaluations/report.html',
@@ -3097,7 +3353,6 @@ def report_view(request):
             'result_available':
                 True,
 
-            # 평균
             'team_average':
                 (
                     round(team_average, 2)
@@ -3119,7 +3374,6 @@ def report_view(request):
                     else None
                 ),
 
-            # 100점
             'team_score':
                 (
                     round(team_score, 2)
@@ -3141,7 +3395,6 @@ def report_view(request):
                     else None
                 ),
 
-            # 가중
             'weighted_team_score':
                 weighted_team_score,
 
@@ -3151,23 +3404,18 @@ def report_view(request):
             'weighted_teacher_score':
                 weighted_teacher_score,
 
-            # 최종
             'final_score':
                 final_score,
 
-            # 등급
             'grade':
                 grade,
 
-            # 계산 상태
             'calculation_status':
                 calculation_status,
 
-            # 석차
             'student_rank':
                 student_rank,
 
-            # 석차 산정 대상 학생 수
             'total_students':
                 len(
                     ranking_data
