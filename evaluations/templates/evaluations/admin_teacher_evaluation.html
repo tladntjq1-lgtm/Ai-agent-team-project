@@ -409,6 +409,7 @@
 
       <!-- ====================================
            개인 평가
+           팀별 그룹 표시
       ===================================== -->
       <div
         class="tab-pane fade"
@@ -416,7 +417,7 @@
       >
 
 
-        <!-- 진행률 -->
+        <!-- 전체 진행률 -->
         <div class="card border-0 shadow-sm mb-4">
 
           <div class="card-body">
@@ -426,7 +427,7 @@
             >
 
               <strong>
-                개인 평가 진행률
+                개인 평가 전체 진행률
               </strong>
 
               <span>
@@ -457,106 +458,273 @@
 
 
 
-        <!-- 학생 목록 -->
-        <div class="row g-4">
+        <!-- ==================================
+             팀별 학생 그룹
+        =================================== -->
+        {% for group in team_student_groups %}
 
 
-          {% for student in students %}
+          <div class="card border-0 shadow-sm mb-4">
 
 
-            <div class="col-md-6 col-xl-4">
-
-              <div class="card border-0 shadow-sm h-100">
-
-                <div class="card-body p-4">
+            <!-- 팀 헤더 -->
+            <div class="card-header bg-white p-4">
 
 
-                  <h5 class="fw-bold mb-1">
+              <div
+                class="
+                  d-flex
+                  flex-column
+                  flex-md-row
+                  justify-content-between
+                  align-items-md-center
+                  gap-3
+                "
+              >
 
-                    {{ student.name }}
 
-                  </h5>
+                <div>
+
+                  <div class="d-flex align-items-center gap-2 mb-1">
+
+                    <h4 class="fw-bold mb-0">
+
+                      {{ group.team.team_name }}
+
+                    </h4>
 
 
-                  <p class="text-muted small">
+                    <span class="badge text-bg-secondary">
 
-                    {{ student.email|default:"이메일 미등록" }}
+                      {{ group.member_count }}명
+
+                    </span>
+
+                  </div>
+
+
+                  <p class="text-muted small mb-0">
+
+                    선생님 학생 평가 완료
+
+                    {{ group.completed_member_count }}
+
+                    /
+
+                    {{ group.member_count }}명
 
                   </p>
 
+                </div>
 
-                  {% if student.student_id in completed_student_ids %}
 
 
-                    <span class="badge text-bg-success mb-4">
-                      평가 완료
+                <div style="min-width: 180px;">
+
+                  <div
+                    class="
+                      d-flex
+                      justify-content-between
+                      small
+                      mb-1
+                    "
+                  >
+
+                    <span>
+                      진행률
                     </span>
 
+                    <strong>
 
-                    <div class="d-grid">
+                      {{ group.progress }}%
 
-                      <button
-                        class="btn btn-secondary"
-                        disabled
-                      >
-                        평가 완료
-                      </button>
+                    </strong>
+
+                  </div>
+
+
+                  <div class="progress">
+
+                    <div
+                      class="progress-bar"
+                      style="width: {{ group.progress }}%;"
+                    >
+
+                      {{ group.progress }}%
 
                     </div>
 
-
-                  {% else %}
-
-
-                    <span class="badge text-bg-warning mb-4">
-                      평가 대기
-                    </span>
-
-
-                    <div class="d-grid">
-
-                      <button
-                        type="button"
-                        class="btn btn-primary"
-
-                        data-bs-toggle="modal"
-
-                        data-bs-target="#studentModal"
-
-                        data-student-id="{{ student.student_id }}"
-
-                        data-student-name="{{ student.name }}"
-                      >
-
-                        평가하기
-
-                      </button>
-
-                    </div>
-
-
-                  {% endif %}
-
+                  </div>
 
                 </div>
+
 
               </div>
 
             </div>
 
 
-          {% empty %}
+
+            <!-- 해당 팀 학생 목록 -->
+            <div class="card-body p-4">
 
 
-            <div class="alert alert-secondary">
-              평가할 학생이 없습니다.
+              <div class="row g-4">
+
+
+                {% for item in group.members %}
+
+
+                  <div class="col-md-6 col-xl-4">
+
+
+                    <div
+                      class="
+                        card
+                        border
+                        h-100
+
+                        {% if item.is_completed %}
+                          bg-body-tertiary
+                        {% endif %}
+                      "
+                    >
+
+
+                      <div class="card-body p-4">
+
+
+                        <!-- 학생 이름 -->
+                        <h5 class="fw-bold mb-1">
+
+                          {{ item.student.name }}
+
+                        </h5>
+
+
+                        <!-- 이메일 -->
+                        <p class="text-muted small mb-3">
+
+                          {{ item.student.email|default:"이메일 미등록" }}
+
+                        </p>
+
+
+                        <!-- 소속 팀 -->
+                        <div class="mb-3">
+
+                          <span class="badge text-bg-primary">
+
+                            {{ group.team.team_name }}
+
+                          </span>
+
+                        </div>
+
+
+                        <!-- 평가 상태 -->
+                        {% if item.is_completed %}
+
+
+                          <span class="badge text-bg-success mb-4">
+                            평가 완료
+                          </span>
+
+
+                          <div class="d-grid">
+
+                            <button
+                              class="btn btn-secondary"
+                              disabled
+                            >
+                              평가 완료
+                            </button>
+
+                          </div>
+
+
+                        {% else %}
+
+
+                          <span class="badge text-bg-warning mb-4">
+                            평가 대기
+                          </span>
+
+
+                          <div class="d-grid">
+
+                            <button
+                              type="button"
+                              class="btn btn-primary"
+
+                              data-bs-toggle="modal"
+
+                              data-bs-target="#studentModal"
+
+                              data-student-id="{{ item.student.student_id }}"
+
+                              data-student-name="{{ item.student.name }}"
+
+                              data-student-team="{{ group.team.team_name }}"
+                            >
+
+                              평가하기
+
+                            </button>
+
+                          </div>
+
+
+                        {% endif %}
+
+
+                      </div>
+
+
+                    </div>
+
+
+                  </div>
+
+
+                {% empty %}
+
+
+                  <div class="col-12">
+
+                    <div class="alert alert-secondary mb-0">
+
+                      이 팀에 등록된 학생이 없습니다.
+
+                    </div>
+
+                  </div>
+
+
+                {% endfor %}
+
+
+              </div>
+
+
             </div>
 
 
-          {% endfor %}
+          </div>
 
 
-        </div>
+        {% empty %}
+
+
+          <div class="alert alert-secondary">
+
+            평가할 학생이 없습니다.
+
+          </div>
+
+
+        {% endfor %}
+
 
       </div>
 
@@ -729,6 +897,16 @@
             </div>
 
 
+          {% empty %}
+
+
+            <div class="alert alert-warning">
+
+              등록된 팀 평가 문항이 없습니다.
+
+            </div>
+
+
           {% endfor %}
 
 
@@ -748,12 +926,16 @@
           </button>
 
 
-          <button
-            type="submit"
-            class="btn btn-primary"
-          >
-            평가 제출
-          </button>
+          {% if team_questions %}
+
+            <button
+              type="submit"
+              class="btn btn-primary"
+            >
+              평가 제출
+            </button>
+
+          {% endif %}
 
 
         </div>
@@ -817,11 +999,23 @@
               학생 개인 평가
             </h5>
 
-            <small class="text-muted">
+
+            <small class="text-muted d-block">
 
               평가 대상:
 
               <strong id="teacherTargetStudentName">
+                -
+              </strong>
+
+            </small>
+
+
+            <small class="text-muted">
+
+              소속 팀:
+
+              <strong id="teacherTargetStudentTeam">
                 -
               </strong>
 
@@ -904,6 +1098,16 @@
             </div>
 
 
+          {% empty %}
+
+
+            <div class="alert alert-warning">
+
+              등록된 개인 평가 문항이 없습니다.
+
+            </div>
+
+
           {% endfor %}
 
 
@@ -923,12 +1127,16 @@
           </button>
 
 
-          <button
-            type="submit"
-            class="btn btn-primary"
-          >
-            평가 제출
-          </button>
+          {% if individual_questions %}
+
+            <button
+              type="submit"
+              class="btn btn-primary"
+            >
+              평가 제출
+            </button>
+
+          {% endif %}
 
 
         </div>
@@ -960,7 +1168,48 @@ document.addEventListener(
 
 
     // ======================================
-    // TEAM Modal
+    // 1. URL 확인
+    // 개인 평가 후 ?tab=individual 이면
+    // 학생 개인 평가 탭 자동 활성화
+    // ======================================
+    const params =
+      new URLSearchParams(
+        window.location.search
+      );
+
+
+    const activeTab =
+      params.get(
+        'tab'
+      );
+
+
+    if (activeTab === 'individual') {
+
+      const individualTabButton =
+        document.querySelector(
+          '[data-bs-target="#individualEvaluation"]'
+        );
+
+
+      if (individualTabButton) {
+
+        const individualTab =
+          new bootstrap.Tab(
+            individualTabButton
+          );
+
+
+        individualTab.show();
+
+      }
+
+    }
+
+
+
+    // ======================================
+    // 2. TEAM Modal
     // ======================================
     const teamModal =
       document.getElementById(
@@ -968,53 +1217,65 @@ document.addEventListener(
       );
 
 
-    teamModal.addEventListener(
-      'show.bs.modal',
-      function (event) {
+    if (teamModal) {
+
+      teamModal.addEventListener(
+        'show.bs.modal',
+        function (event) {
 
 
-        const button =
-          event.relatedTarget;
+          const button =
+            event.relatedTarget;
 
 
-        const teamId =
-          button.getAttribute(
-            'data-team-id'
-          );
+          if (!button) {
+            return;
+          }
 
 
-        const teamName =
-          button.getAttribute(
-            'data-team-name'
-          );
+          const teamId =
+            button.getAttribute(
+              'data-team-id'
+            );
 
 
-        document.getElementById(
-          'teacherTargetTeamId'
-        ).value = teamId;
+          const teamName =
+            button.getAttribute(
+              'data-team-name'
+            );
 
 
-        document.getElementById(
-          'teacherTargetTeamName'
-        ).textContent = teamName;
+          document.getElementById(
+            'teacherTargetTeamId'
+          ).value = teamId;
 
 
-        // 이전 선택 초기화
-        teamModal
-          .querySelectorAll(
-            'input[type="radio"]'
-          )
-          .forEach(
-            radio => radio.checked = false
-          );
+          document.getElementById(
+            'teacherTargetTeamName'
+          ).textContent = teamName;
 
-      }
-    );
+
+          teamModal
+            .querySelectorAll(
+              'input[type="radio"]'
+            )
+            .forEach(
+              function (radio) {
+
+                radio.checked = false;
+
+              }
+            );
+
+        }
+      );
+
+    }
 
 
 
     // ======================================
-    // STUDENT Modal
+    // 3. STUDENT Modal
     // ======================================
     const studentModal =
       document.getElementById(
@@ -1022,48 +1283,72 @@ document.addEventListener(
       );
 
 
-    studentModal.addEventListener(
-      'show.bs.modal',
-      function (event) {
+    if (studentModal) {
+
+      studentModal.addEventListener(
+        'show.bs.modal',
+        function (event) {
 
 
-        const button =
-          event.relatedTarget;
+          const button =
+            event.relatedTarget;
 
 
-        const studentId =
-          button.getAttribute(
-            'data-student-id'
-          );
+          if (!button) {
+            return;
+          }
 
 
-        const studentName =
-          button.getAttribute(
-            'data-student-name'
-          );
+          const studentId =
+            button.getAttribute(
+              'data-student-id'
+            );
 
 
-        document.getElementById(
-          'teacherTargetStudentId'
-        ).value = studentId;
+          const studentName =
+            button.getAttribute(
+              'data-student-name'
+            );
 
 
-        document.getElementById(
-          'teacherTargetStudentName'
-        ).textContent = studentName;
+          const studentTeam =
+            button.getAttribute(
+              'data-student-team'
+            );
 
 
-        // 이전 선택 초기화
-        studentModal
-          .querySelectorAll(
-            'input[type="radio"]'
-          )
-          .forEach(
-            radio => radio.checked = false
-          );
+          document.getElementById(
+            'teacherTargetStudentId'
+          ).value = studentId;
 
-      }
-    );
+
+          document.getElementById(
+            'teacherTargetStudentName'
+          ).textContent = studentName;
+
+
+          document.getElementById(
+            'teacherTargetStudentTeam'
+          ).textContent =
+            studentTeam;
+
+
+          studentModal
+            .querySelectorAll(
+              'input[type="radio"]'
+            )
+            .forEach(
+              function (radio) {
+
+                radio.checked = false;
+
+              }
+            );
+
+        }
+      );
+
+    }
 
 
   }
