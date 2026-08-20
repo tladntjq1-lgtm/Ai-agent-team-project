@@ -12,6 +12,7 @@ from evaluations.models import (
     TeamEvaluationScore,
     IndividualEvaluationScore,
     TeacherIndividualScore,
+    TeacherTeamScore,
 )
 
 from .models import Team, TeamMember
@@ -184,6 +185,109 @@ def calculate_student_score(
         final_score,
         2
     )
+
+
+# ==========================================
+# 이전 팀원 관계 조회 함수
+# ==========================================
+def get_previous_teammates(evaluation_round):
+
+    previous_teams = Team.objects.filter(
+        project_id=evaluation_round.project_id
+    )
+
+    previous_teammates = {}
+
+    for team in previous_teams:
+
+        member_ids = list(
+            TeamMember.objects.filter(
+                team_id=team.team_id
+            ).values_list(
+                'student_id',
+                flat=True
+            )
+        )
+
+        for student_id in member_ids:
+
+            previous_teammates.setdefault(
+                student_id,
+                set()
+            )
+
+            for teammate_id in member_ids:
+
+                if teammate_id != student_id:
+
+                    previous_teammates[
+                        student_id
+                    ].add(
+                        teammate_id
+                    )
+
+    return previous_teammates
+
+
+# ==========================================
+# 평가 기록이 연결된 팀인지 확인
+# ==========================================
+def has_team_evaluation_history(team_ids):
+
+    team_ids = list(team_ids)
+
+    if not team_ids:
+        return False
+
+    student_team_history_exists = (
+        TeamEvaluationScore.objects.filter(
+            target_team_id__in=team_ids
+        ).exists()
+    )
+
+    teacher_team_history_exists = (
+        TeacherTeamScore.objects.filter(
+            target_team_id__in=team_ids
+        ).exists()
+    )
+
+    return (
+        student_team_history_exists
+        or teacher_team_history_exists
+    )
+
+
+# ==========================================
+# 현재 프로젝트의 팀 편성을 안전하게 초기화
+#
+# 평가 기록이 존재하는 프로젝트의 팀은
+# 삭제하지 않고 False를 반환합니다.
+# ==========================================
+def clear_current_project_teams_safely(project):
+
+    existing_teams = Team.objects.filter(
+        project_id=project.project_id
+    )
+
+    existing_team_ids = list(
+        existing_teams.values_list(
+            'team_id',
+            flat=True
+        )
+    )
+
+    if has_team_evaluation_history(
+        existing_team_ids
+    ):
+        return False
+
+    TeamMember.objects.filter(
+        team_id__in=existing_team_ids
+    ).delete()
+
+    existing_teams.delete()
+
+    return True
 
 
 # ==========================================
@@ -547,6 +651,24 @@ def admin_team_management_view(request):
                 )
 
 
+            # 평가 기록이 연결된 과거 팀은 삭제 금지
+            if has_team_evaluation_history(
+                [team.team_id]
+            ):
+
+                messages.error(
+                    request,
+                    (
+                        '이 팀은 평가 기록에서 사용 중이므로 삭제할 수 없습니다. '
+                        '과거 평가 기록 보존을 위해 새 프로젝트에서 팀을 편성해주세요.'
+                    )
+                )
+
+                return redirect(
+                    f'/admin-teams/?project_id={project.project_id}'
+                )
+
+
             TeamMember.objects.filter(
                 team_id=team.team_id
             ).delete()
@@ -641,27 +763,30 @@ def admin_team_management_view(request):
 
 
             # ----------------------------------
-            # 기존 현재 프로젝트 팀 초기화
+            # 기존 현재 프로젝트 팀 안전 초기화
+            #
+            # 평가 기록이 연결된 과거 프로젝트라면
+            # 기존 팀을 삭제하지 않습니다.
             # ----------------------------------
-            existing_teams = Team.objects.filter(
-                project_id=project.project_id
+            cleared = clear_current_project_teams_safely(
+                project
             )
 
 
-            existing_team_ids = list(
-                existing_teams.values_list(
-                    'team_id',
-                    flat=True
+            if not cleared:
+
+                messages.error(
+                    request,
+                    (
+                        '현재 프로젝트에는 이미 평가 기록이 연결되어 있어 '
+                        '팀을 다시 편성할 수 없습니다. '
+                        '새 프로젝트를 만든 뒤 랜덤 편성을 실행해주세요.'
+                    )
                 )
-            )
 
-
-            TeamMember.objects.filter(
-                team_id__in=existing_team_ids
-            ).delete()
-
-
-            existing_teams.delete()
+                return redirect(
+                    f'/admin-teams/?project_id={project.project_id}'
+                )
 
 
             # ----------------------------------
@@ -724,6 +849,7 @@ def admin_team_management_view(request):
 
         # ==================================
         # F. 평가 점수 균형 편성
+        # + 이전 팀원 중복 최소화
         # ==================================
         elif action == 'balanced_assign':
 
@@ -735,10 +861,6 @@ def admin_team_management_view(request):
                 'source_round_id'
             )
 
-
-            # ----------------------------------
-            # 팀 수 검증
-            # ----------------------------------
             try:
 
                 team_count_value = int(
@@ -756,7 +878,6 @@ def admin_team_management_view(request):
                     f'/admin-teams/?project_id={project.project_id}'
                 )
 
-
             if team_count_value < 2:
 
                 messages.error(
@@ -768,15 +889,10 @@ def admin_team_management_view(request):
                     f'/admin-teams/?project_id={project.project_id}'
                 )
 
-
-            # ----------------------------------
-            # 기준 평가 회차 확인
-            # ----------------------------------
             source_round = EvaluationRound.objects.filter(
                 round_id=source_round_id,
                 status='COMPLETED'
             ).first()
-
 
             if not source_round:
 
@@ -791,14 +907,33 @@ def admin_team_management_view(request):
 
 
             # ----------------------------------
-            # 전체 학생
+            # 과거 평가 프로젝트 자체를
+            # 새 팀 편성 대상으로 사용하면 안 됨
             # ----------------------------------
+            if (
+                source_round.project_id
+                == project.project_id
+            ):
+
+                messages.error(
+                    request,
+                    (
+                        '기준 평가 회차가 속한 과거 프로젝트에는 '
+                        '새 팀을 편성할 수 없습니다. '
+                        '새 프로젝트를 선택한 뒤 균형 편성을 실행해주세요.'
+                    )
+                )
+
+                return redirect(
+                    f'/admin-teams/?project_id={project.project_id}'
+                )
+
+
             students = list(
                 Student.objects.all().order_by(
                     'student_id'
                 )
             )
-
 
             if not students:
 
@@ -811,7 +946,6 @@ def admin_team_management_view(request):
                     f'/admin-teams/?project_id={project.project_id}'
                 )
 
-
             if team_count_value > len(students):
 
                 messages.error(
@@ -823,22 +957,31 @@ def admin_team_management_view(request):
                     f'/admin-teams/?project_id={project.project_id}'
                 )
 
+            # ----------------------------------
+            # 중요:
+            # 현재 팀을 삭제하기 전에
+            # 기준 회차의 과거 팀원 관계를 조회
+            # ----------------------------------
+            previous_teammates = (
+                get_previous_teammates(
+                    source_round
+                )
+            )
 
-            # ==================================
+            # ----------------------------------
             # 학생별 이전 평가 점수 계산
-            # ==================================
+            # ----------------------------------
             students_with_scores = []
-
             existing_scores = []
-
 
             for student in students:
 
-                final_score = calculate_student_score(
-                    student.student_id,
-                    source_round
+                final_score = (
+                    calculate_student_score(
+                        student.student_id,
+                        source_round
+                    )
                 )
-
 
                 if final_score is not None:
 
@@ -846,18 +989,19 @@ def admin_team_management_view(request):
                         final_score
                     )
 
-
                 students_with_scores.append(
                     {
-                        'student': student,
-                        'score': final_score,
+                        'student':
+                            student,
+
+                        'score':
+                            final_score,
                     }
                 )
 
-
-            # ==================================
-            # 평가 기록 없는 학생 평균점수 처리
-            # ==================================
+            # ----------------------------------
+            # 점수 없는 학생은 평균점수 사용
+            # ----------------------------------
             if existing_scores:
 
                 average_score = (
@@ -869,12 +1013,10 @@ def admin_team_management_view(request):
 
                 average_score = 50
 
-
             average_score = round(
                 average_score,
                 2
             )
-
 
             for student_data in students_with_scores:
 
@@ -884,45 +1026,44 @@ def admin_team_management_view(request):
                         average_score
                     )
 
-
-            # ==================================
-            # 점수 높은 순 정렬
-            # ==================================
+            # ----------------------------------
+            # 높은 점수 순 정렬
+            # ----------------------------------
             students_with_scores.sort(
                 key=lambda x: x['score'],
                 reverse=True
             )
 
-
-            # ==================================
-            # 현재 프로젝트 팀 초기화
-            # ==================================
-            existing_teams = Team.objects.filter(
-                project_id=project.project_id
+            # ----------------------------------
+            # 현재 프로젝트 팀 안전 초기화
+            #
+            # 새 프로젝트에 임시 팀이 이미 있다면
+            # 평가 기록이 없는 경우에만 삭제 후 재생성
+            # ----------------------------------
+            cleared = clear_current_project_teams_safely(
+                project
             )
 
 
-            existing_team_ids = list(
-                existing_teams.values_list(
-                    'team_id',
-                    flat=True
+            if not cleared:
+
+                messages.error(
+                    request,
+                    (
+                        '현재 프로젝트의 팀이 이미 평가 기록에서 사용 중입니다. '
+                        '과거 기록을 보호하기 위해 자동 재편성을 중단했습니다. '
+                        '새 프로젝트에서 다시 시도해주세요.'
+                    )
                 )
-            )
 
+                return redirect(
+                    f'/admin-teams/?project_id={project.project_id}'
+                )
 
-            TeamMember.objects.filter(
-                team_id__in=existing_team_ids
-            ).delete()
-
-
-            existing_teams.delete()
-
-
-            # ==================================
+            # ----------------------------------
             # 새 팀 생성
-            # ==================================
+            # ----------------------------------
             new_teams = []
-
 
             for index in range(
                 1,
@@ -938,96 +1079,137 @@ def admin_team_management_view(request):
                     team
                 )
 
+            # ----------------------------------
+            # 팀별 현재 상태
+            # ----------------------------------
+            team_states = []
 
-            # ==================================
-            # Snake Draft 순서 생성
+            for team in new_teams:
+
+                team_states.append(
+                    {
+                        'team':
+                            team,
+
+                        'members':
+                            [],
+
+                        'total_score':
+                            0,
+                    }
+                )
+
+            # 팀 최대 인원
+            max_team_size = (
+                len(students)
+                + team_count_value
+                - 1
+            ) // team_count_value
+
+            total_repeat_count = 0
+
+            # ----------------------------------
+            # 실제 배정
             #
-            # 예: 3팀
-            # 0,1,2,2,1,0...
-            # ==================================
-            snake_order = []
-
-
-            while len(snake_order) < len(
-                students_with_scores
-            ):
-
-                # 정방향
-                for index in range(
-                    team_count_value
-                ):
-
-                    snake_order.append(
-                        index
-                    )
-
-
-                    if len(snake_order) >= len(
-                        students_with_scores
-                    ):
-
-                        break
-
-
-                if len(snake_order) >= len(
-                    students_with_scores
-                ):
-
-                    break
-
-
-                # 역방향
-                for index in range(
-                    team_count_value - 1,
-                    -1,
-                    -1
-                ):
-
-                    snake_order.append(
-                        index
-                    )
-
-
-                    if len(snake_order) >= len(
-                        students_with_scores
-                    ):
-
-                        break
-
-
-            # ==================================
-            # 실제 팀 배정
-            # ==================================
-            for student_data, team_index in zip(
-                students_with_scores,
-                snake_order
-            ):
+            # 1순위 이전 팀원 중복 최소
+            # 2순위 팀 인원 최소
+            # 3순위 팀 누적점수 최소
+            # ----------------------------------
+            for student_data in students_with_scores:
 
                 student = student_data[
                     'student'
                 ]
 
-
-                target_team = new_teams[
-                    team_index
+                student_score = student_data[
+                    'score'
                 ]
 
+                old_teammates = (
+                    previous_teammates.get(
+                        student.student_id,
+                        set()
+                    )
+                )
+
+                candidate_teams = []
+
+                for team_state in team_states:
+
+                    if len(
+                        team_state['members']
+                    ) >= max_team_size:
+
+                        continue
+
+                    repeat_count = sum(
+                        1
+                        for member_id
+                        in team_state['members']
+                        if member_id
+                        in old_teammates
+                    )
+
+                    candidate_teams.append(
+                        {
+                            'state':
+                                team_state,
+
+                            'repeat_count':
+                                repeat_count,
+                        }
+                    )
+
+                candidate_teams.sort(
+                    key=lambda item: (
+                        item['repeat_count'],
+                        len(
+                            item['state'][
+                                'members'
+                            ]
+                        ),
+                        item['state'][
+                            'total_score'
+                        ],
+                    )
+                )
+
+                selected = candidate_teams[0]
+
+                target_state = selected[
+                    'state'
+                ]
+
+                total_repeat_count += selected[
+                    'repeat_count'
+                ]
 
                 TeamMember.objects.create(
-                    team_id=target_team.team_id,
+                    team_id=target_state[
+                        'team'
+                    ].team_id,
                     student_id=student.student_id
                 )
 
+                target_state[
+                    'members'
+                ].append(
+                    student.student_id
+                )
+
+                target_state[
+                    'total_score'
+                ] += student_score
 
             messages.success(
                 request,
                 (
                     f'{source_round.round_name}의 평가 점수를 기준으로 '
                     f'{len(students)}명을 {team_count_value}개 팀으로 '
-                    '균형 편성했습니다.'
+                    '점수 균형 + 이전 팀원 중복 최소화 방식으로 편성했습니다. '
+                    f'(이전 팀원 중복 {total_repeat_count}건)'
                 )
             )
-
 
             return redirect(
                 f'/admin-teams/?project_id={project.project_id}'
@@ -1050,6 +1232,24 @@ def admin_team_management_view(request):
                     flat=True
                 )
             )
+
+
+            if has_team_evaluation_history(
+                team_ids
+            ):
+
+                messages.error(
+                    request,
+                    (
+                        '현재 프로젝트에는 평가 기록이 연결된 팀이 있어 '
+                        '전체 팀 초기화를 할 수 없습니다. '
+                        '과거 평가 기록은 보존되어야 합니다.'
+                    )
+                )
+
+                return redirect(
+                    f'/admin-teams/?project_id={project.project_id}'
+                )
 
 
             TeamMember.objects.filter(
