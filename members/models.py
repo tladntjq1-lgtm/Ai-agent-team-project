@@ -17,6 +17,7 @@ class Member(models.Model):
 
 
 class Student(models.Model):
+    print(f"Initializing Student model")
     student_id = models.AutoField(
         primary_key=True
     )

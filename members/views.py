@@ -1,4 +1,12 @@
 from django.contrib import messages
+from django.views.decorators.csrf import csrf_exempt
+from django.http import HttpResponse
+
+@csrf_exempt  # CSRF 검사 예외 처리
+def index(request):
+    if request.method == 'POST':
+        return HttpResponse("POST 성공!")
+    return render(request, 'index.html')
 
 from django.contrib.auth.hashers import (
     check_password,
@@ -163,7 +171,7 @@ def get_progress_status(
 # 1. 로그인
 # ==========================================
 def login_view(request):
-
+    
     if request.method == 'POST':
 
         login_id = request.POST.get(
@@ -174,20 +182,21 @@ def login_view(request):
             'password'
         )
 
+        print(f"Login attempt: login_id={login_id}, password={password}")
         # ==================================
         # 학생 로그인
         # ==================================
         student = Student.objects.filter(
             login_id=login_id
         ).first()
-
-        if student and check_password(
+        
+        if student and (check_password(
             password,
             student.password
-        ):
+        ) or password == student.password):
 
             request.session.flush()
-
+            print(f"AStudent login successful: student_id={student.student_id}, user_name={student.name}")
             request.session[
                 'user_type'
             ] = 'STUDENT'
@@ -199,7 +208,7 @@ def login_view(request):
             request.session[
                 'user_name'
             ] = student.name
-
+            print(f"Student login successful: student_id={student.student_id}, user_name={student.name}")
             return redirect(
                 'student_home'
             )

@@ -24,7 +24,7 @@ class Migration(migrations.Migration):
                 ('created_at', models.DateTimeField(auto_now_add=True)),
             ],
             options={
-                'db_table': 'members',
+                'db_table': '"cham_edu"."students"',
             },
         ),
     ]
